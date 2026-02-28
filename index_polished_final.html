@@ -1,0 +1,1635 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>TimeStuDY</title>
+<style>
+  :root{
+    --bg:#0b0c10;
+    --panel:#121723;
+    --panel2:#0f1420;
+    --text:#e9eef7;
+    --muted:#9fb0c7;
+    --accent:#3aa0ff;
+    --accent2:#ff8b3a;
+    --ok:#2bd576;
+    --bad:#ff4d4d;
+    --line:rgba(255,255,255,.08);
+    --shadow: 0 16px 48px rgba(0,0,0,.45);
+    --radius:18px;
+    --radius2:14px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:var(--sans);
+    background: radial-gradient(1200px 900px at 20% -10%, rgba(58,160,255,.18), transparent 55%),
+                radial-gradient(1000px 800px at 110% 10%, rgba(255,139,58,.14), transparent 45%),
+                var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .app{
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+  }
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(11,12,16,.72);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 12px 14px calc(12px + env(safe-area-inset-top)) 14px;
+    max-width:1100px;
+    margin:0 auto;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    font-weight:800;
+    letter-spacing:.2px;
+    white-space:nowrap;
+  }
+  .brand .logo{
+    width:12px;height:12px;border-radius:3px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 0 0 3px rgba(58,160,255,.12), 0 0 0 6px rgba(255,139,58,.08);
+  }
+  .brand .name{font-size:16px}
+  .brand .tag{font-size:12px; font-weight:700; color:var(--muted)}
+  .spacer{flex:1}
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.03);
+    border-radius:999px;
+    padding:8px 10px;
+    font-size:12px;
+    color:var(--muted);
+    max-width:52vw;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .pill strong{color:var(--text); font-weight:700}
+  .btn{
+    appearance:none; border:none;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight:700;
+    font-size:13px;
+    background: rgba(255,255,255,.06);
+    color: var(--text);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow: 0 2px 0 rgba(0,0,0,.3);
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .btn:hover{background: rgba(255,255,255,.085)}
+  .btn:active{transform: translateY(1px)}
+  .btn.primary{background: linear-gradient(135deg, rgba(58,160,255,.95), rgba(255,139,58,.92)); border-color: rgba(255,255,255,.16)}
+  .btn.primary:hover{filter:saturate(1.05) brightness(1.03)}
+  .btn.ghost{background: transparent}
+  .btn.small{padding:8px 10px; font-size:12px; border-radius: 11px}
+  .btn.danger{background: rgba(255,77,77,.14); border-color: rgba(255,77,77,.28)}
+  .btn.ok{background: rgba(43,213,118,.14); border-color: rgba(43,213,118,.26)}
+  .btn.disabled, .btn:disabled{opacity:.45; cursor:not-allowed}
+  .wrap{max-width:1100px; margin: 0 auto; padding: 18px 14px 90px 14px}
+  .grid{
+    display:grid;
+    gap:14px;
+    grid-template-columns: 1.05fr .95fr;
+  }
+  @media (max-width: 980px){
+    .grid{grid-template-columns: 1fr}
+  }
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .card .hd{
+    padding: 14px 14px 12px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:10px;
+  }
+  .card .hd h2{
+    margin:0; font-size:14px; letter-spacing:.2px;
+  }
+  .card .hd .sub{
+    margin-left:auto;
+    color:var(--muted);
+    font-size:12px;
+  }
+  .card .bd{padding: 14px}
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+  input[type="text"], input[type="number"], textarea, select{
+    width:100%;
+    background: rgba(0,0,0,.22);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    padding: 10px 12px;
+    outline:none;
+    font-size:14px;
+  }
+  textarea{min-height: 140px; resize: vertical}
+  .row{display:grid; gap:12px; grid-template-columns: 1fr 1fr}
+  @media (max-width: 580px){.row{grid-template-columns: 1fr}}
+  .hint{font-size:12px; color:var(--muted); line-height:1.35}
+  .kpi{
+    display:grid; gap:10px;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 620px){.kpi{grid-template-columns: 1fr}}
+  .stat{
+    padding: 12px;
+    border-radius: 14px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.03);
+  }
+  .stat .t{font-size:12px; color:var(--muted); margin-bottom:4px}
+  .stat .v{font-family:var(--mono); font-size:15px; font-weight:700}
+  .video{
+    width:100%;
+    background:#000;
+    border-radius: 14px;
+    border:1px solid rgba(255,255,255,.12);
+    overflow:hidden;
+  }
+  .controls{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-top: 12px;
+    align-items:center;
+  }
+  .stepbar{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin-top: 12px;
+  }
+  .stepbtn{
+    padding: 10px 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.035);
+    color: var(--text);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    user-select:none;
+    touch-action: manipulation;
+  }
+  .stepbtn.active{border-color: rgba(58,160,255,.55); background: rgba(58,160,255,.12)}
+  .stepbtn.done{border-color: rgba(43,213,118,.35); background: rgba(43,213,118,.10)}
+  .stepbtn.rework{border-color: rgba(255,77,77,.35); background: rgba(255,77,77,.10)}
+  .badge{
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.03);
+    color: var(--muted);
+    font-size:12px;
+  }
+  .badge strong{color:var(--text)}
+  .toast{
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    z-index: 120;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(0,0,0,.68);
+    border:1px solid rgba(255,255,255,.16);
+    color: var(--text);
+    font-size: 13px;
+    box-shadow: var(--shadow);
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .18s ease;
+    max-width: 92vw;
+  }
+  .toast.show{opacity:1}
+  .floating-help{
+    position: fixed;
+    right: 14px;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    z-index: 110;
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(58,160,255,.95), rgba(255,139,58,.92));
+    border: 1px solid rgba(255,255,255,.16);
+    box-shadow: var(--shadow);
+    display:flex; align-items:center; justify-content:center;
+    color:#0b0c10;
+    font-weight:900;
+    font-size:18px;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .floating-help:active{transform: translateY(1px)}
+  .drawer{
+    position: fixed;
+    top:0; right:0;
+    height: 100%;
+    width: min(420px, 92vw);
+    z-index: 115;
+    background: rgba(15,20,32,.98);
+    border-left:1px solid rgba(255,255,255,.14);
+    box-shadow: var(--shadow);
+    transform: translateX(110%);
+    transition: transform .18s ease;
+    display:flex;
+    flex-direction:column;
+    padding-top: env(safe-area-inset-top);
+  }
+  .drawer.open{transform: translateX(0)}
+  .drawer .dh{
+    display:flex; align-items:center; gap:10px;
+    padding: 14px;
+    border-bottom:1px solid var(--line);
+  }
+  .drawer .dh h3{margin:0; font-size:14px}
+  .drawer .db{
+    padding: 14px;
+    overflow:auto;
+  }
+  .drawer .db h4{margin: 14px 0 6px 0; font-size:13px}
+  .drawer .db p, .drawer .db li{color:var(--muted); font-size:13px; line-height:1.45}
+  .drawer .db .callout{
+    border:1px dashed rgba(255,255,255,.18);
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,.03);
+    color: var(--muted);
+    font-size:13px;
+    margin: 10px 0;
+  }
+
+  .view{display:none}
+  .view.active{display:block}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+  }
+  th,td{
+    border-bottom:1px solid rgba(255,255,255,.10);
+    padding: 10px 8px;
+    vertical-align:top;
+  }
+  th{color:var(--muted); font-weight:700; text-align:left; font-size:12px}
+  tr:hover td{background: rgba(255,255,255,.02)}
+  .table-actions{display:flex; gap:8px; flex-wrap:wrap}
+  .mono{font-family:var(--mono)}
+  .muted{color:var(--muted)}
+  .hr{height:1px; background: var(--line); margin: 14px 0}
+  .modal-backdrop{
+    position:fixed; inset:0;
+    background: rgba(0,0,0,.58);
+    z-index:130;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 18px;
+  }
+  .modal-backdrop.open{display:flex}
+  .modal{
+    width: min(560px, 96vw);
+    background: rgba(18,23,35,.98);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .modal .mh{
+    padding: 14px;
+    border-bottom: 1px solid var(--line);
+    display:flex; align-items:center; gap:10px;
+  }
+  .modal .mh h3{margin:0; font-size:14px}
+  .modal .mb{padding: 14px}
+  .modal .mf{padding: 14px; border-top:1px solid var(--line); display:flex; gap:10px; justify-content:flex-end}
+  canvas{max-width:100%}
+  .smallnote{font-size:12px; color:var(--muted); line-height:1.35}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="name">TimeStuDY</div>
+        <div class="tag">Lean Time Study + Yamazumi</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="pill" id="pillStatus"><strong>Status</strong> Setup</div>
+      <button class="btn small ghost" data-action="openReview" title="Review captures and Yamazumi">Review</button>
+      <button class="btn small ghost" data-action="goSetup" title="Return to Setup">Setup</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- SETUP -->
+    <section class="view active" id="view-setup">
+      <div class="grid">
+        <div class="card">
+          <div class="hd">
+            <h2>Setup</h2>
+            <div class="sub" id="buildInfo"></div>
+          </div>
+          <div class="bd">
+            <div class="row">
+              <div>
+                <label>Study name (job, line, operator)</label>
+                <input type="text" id="jobName" placeholder="e.g., Line 2 – Mulling – Operator A"/>
+                <div class="hint" style="margin-top:6px">Tip: include line + process so your exports are searchable later.</div>
+              </div>
+              <div>
+                <label>Start mode</label>
+                <select id="startMode">
+                  <option value="new">Start new study</option>
+                  <option value="resume">Resume from JSON</option>
+                </select>
+                <div class="hint" style="margin-top:6px">Resume loads video + steps + captured data so you can continue later.</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="row">
+              <div>
+                <label>Video (optional but recommended)</label>
+                <input type="file" id="videoFile" accept="video/*"/>
+                <div class="hint" style="margin-top:6px">If you resume from JSON and the video is missing, you can re-select it here.</div>
+              </div>
+              <div>
+                <label>Resume JSON (only if Start mode = Resume)</label>
+                <input type="file" id="resumeFile" accept="application/json,.json"/>
+                <div class="hint" style="margin-top:6px">Pick the JSON you exported from TimeStuDY.</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <label>Process steps (one per line)</label>
+            <textarea id="stepsText" placeholder="1) Load sash
+2) Apply tape
+3) Install glass
+4) Inspect
+5) Pack"></textarea>
+            <div class="hint" style="margin-top:8px">
+              Keep steps <b>observable</b> (what you can see). If reality gets messy, capture it and correct in Review.
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="controls">
+              <button class="btn primary" data-action="startStudy">Start Study</button>
+              <button class="btn" data-action="importFromResume">Load Resume File</button>
+              <button class="btn" data-action="openGuide">Open Process Flow Guide</button>
+              <span class="badge"><strong>Lean rule:</strong> capture reality → fix structure in Review</span>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="kpi">
+              <div class="stat">
+                <div class="t">What this tool is for</div>
+                <div class="v">Reveal the work</div>
+                <div class="hint" style="margin-top:8px">Time is a proxy for process. We’re measuring patterns, not blaming people.</div>
+              </div>
+              <div class="stat">
+                <div class="t">What “good” looks like</div>
+                <div class="v">Stable, repeatable</div>
+                <div class="hint" style="margin-top:8px">Less rework, less waiting, fewer interruptions—more value per cycle.</div>
+              </div>
+              <div class="stat">
+                <div class="t">Your output</div>
+                <div class="v">Yamazumi by cycle</div>
+                <div class="hint" style="margin-top:8px">Each cycle becomes a column; waste becomes visible.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd">
+            <h2>Integrated How-To</h2>
+            <div class="sub">Built-in training</div>
+          </div>
+          <div class="bd">
+            <div class="callout">
+              <b>In the moment:</b> keep timing. If the operator backtracks or you mis-tag something, do not stop—capture it and fix it in <b>Review</b>.
+            </div>
+
+            <h4>30-second start</h4>
+            <ol>
+              <li>Enter a study name.</li>
+              <li>Paste steps (one per line).</li>
+              <li>Select a video (optional).</li>
+              <li>Start Study → tap the step you’re observing → Start/End.</li>
+            </ol>
+
+            <h4>Common scenarios</h4>
+            <ul>
+              <li><b>Operator goes back</b> → tag as <b>Rework</b> (or note it) → fix cycle assignment in Review.</li>
+              <li><b>You hit the wrong step</b> → keep going → correct the row in Review.</li>
+              <li><b>Interruptions</b> → tag as <b>Wait</b> or <b>Walk</b> (or note it) → it becomes visible in Yamazumi.</li>
+            </ul>
+
+            <h4>Coach’s eye (Mike Rother mindset)</h4>
+            <p>We’re not hunting “fast.” We’re hunting <b>repeatable</b>. Use the Yamazumi to ask: “Where is the pattern breaking? What condition makes it break?”</p>
+
+            <div class="controls">
+              <button class="btn" data-action="openHelp">Open Quick Help Panel</button>
+              <button class="btn" data-action="openReview">Go to Review</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDY -->
+    <section class="view" id="view-study">
+      <div class="grid">
+        <div class="card">
+          <div class="hd">
+            <h2>Observe & Capture</h2>
+            <div class="sub" id="studySub">—</div>
+          </div>
+          <div class="bd">
+            <video class="video" id="video" controls playsinline></video>
+
+            <div class="controls">
+              <span class="badge">Cycle <strong id="cycleLabel">1</strong></span>
+              <span class="badge">Active <strong id="activeStepLabel">—</strong></span>
+              <span class="badge">Mode <strong id="modeLabel">Ready</strong></span>
+              <span class="spacer"></span>
+              <button class="btn small" data-action="newCycle">New Cycle</button>
+              <button class="btn small" data-action="markRework">Toggle Rework</button>
+              <button class="btn small" data-action="openHelp">?</button>
+            </div>
+
+            <div class="controls">
+              <button class="btn ok" data-action="startStep">Start</button>
+              <button class="btn danger" data-action="endStep">End</button>
+              <button class="btn" data-action="toStepStart">To Step Start</button>
+              <button class="btn" data-action="toStepEnd">To Step End</button>
+              <button class="btn" data-action="resetActiveTiming" title="Cancel the current timing without deleting prior rows">Cancel Active</button>
+            </div>
+
+            <div class="row" style="margin-top:12px">
+              <div>
+                <label>Work type (for the active step)</label>
+                <select id="workType">
+                  <option value="VA">Value Add (VA)</option>
+                  <option value="NNVA">NNVA (required non-value add)</option>
+                  <option value="WALK">Walk / Motion</option>
+                  <option value="WAIT">Wait / Delay</option>
+                  <option value="REWORK">Rework / Backtrack</option>
+                  <option value="WASTE">Other Waste</option>
+                </select>
+              </div>
+              <div>
+                <label>Note (optional)</label>
+                <input type="text" id="note" placeholder="e.g., missing parts; rework from previous cycle; supervisor question"/>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <label>Steps</label>
+            <div class="stepbar" id="stepsBar"></div>
+
+            <div class="hr"></div>
+
+            <div class="controls">
+              <button class="btn primary" data-action="openReview">Review + Yamazumi</button>
+              <button class="btn" data-action="exportJson">Export JSON</button>
+              <button class="btn" data-action="exportCsv">Export CSV</button>
+            </div>
+
+            <div class="smallnote" style="margin-top:10px">
+              <b>Never stop to be perfect.</b> Capture reality. Review is where structure gets cleaned up.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd">
+            <h2>Live Summary</h2>
+            <div class="sub">trustworthy at-a-glance</div>
+          </div>
+          <div class="bd">
+            <div class="kpi">
+              <div class="stat">
+                <div class="t">Rows captured</div>
+                <div class="v" id="statRows">0</div>
+              </div>
+              <div class="stat">
+                <div class="t">Cycles seen</div>
+                <div class="v" id="statCycles">1</div>
+              </div>
+              <div class="stat">
+                <div class="t">Rework rows</div>
+                <div class="v" id="statRework">0</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <h4 style="margin:0 0 8px 0; font-size:13px">Coaching prompts</h4>
+            <ul style="margin:0; padding-left:18px">
+              <li>Where does the pattern break, and under what condition?</li>
+              <li>What’s preventing flow?</li>
+              <li>What’s the next obstacle?</li>
+              <li>What is the smallest experiment we can run?</li>
+            </ul>
+
+            <div class="hr"></div>
+
+            <div class="callout">
+              <b>Taichi Ohno lens:</b> The waste is the teacher. Don’t hide it. Make it visible, then remove the cause.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEW -->
+    <section class="view" id="view-review">
+      <div class="card">
+        <div class="hd">
+          <h2>Review & Yamazumi</h2>
+          <div class="sub" id="reviewSub">—</div>
+        </div>
+        <div class="bd">
+          <div class="controls">
+            <button class="btn" data-action="goStudy">Back to Study</button>
+            <button class="btn" data-action="goSetup">Back to Setup</button>
+            <span class="spacer"></span>
+            <button class="btn" data-action="exportPng">Export Yamazumi PNG</button>
+            <button class="btn" data-action="exportCsv">Export CSV</button>
+            <button class="btn" data-action="exportJson">Export JSON</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <div class="card" style="box-shadow:none">
+              <div class="hd"><h2>Yamazumi by Cycle</h2><div class="sub">each cycle = one column</div></div>
+              <div class="bd">
+                <canvas id="yamazumi" width="980" height="360" aria-label="Yamazumi chart"></canvas>
+                <div class="smallnote" style="margin-top:8px">
+                  Stacks represent totals by work type: VA, NNVA, Walk, Wait, Rework, Other Waste.
+                </div>
+              </div>
+            </div>
+            <div class="card" style="box-shadow:none">
+              <div class="hd"><h2>Cycle Totals</h2><div class="sub">seconds</div></div>
+              <div class="bd" id="cycleTotals"></div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="controls">
+            <label style="margin:0">Filter cycle</label>
+            <select id="filterCycle" style="max-width:180px">
+              <option value="all">All</option>
+            </select>
+            <label style="margin:0">Filter work type</label>
+            <select id="filterType" style="max-width:240px">
+              <option value="all">All</option>
+              <option value="VA">VA</option>
+              <option value="NNVA">NNVA</option>
+              <option value="WALK">WALK</option>
+              <option value="WAIT">WAIT</option>
+              <option value="REWORK">REWORK</option>
+              <option value="WASTE">WASTE</option>
+            </select>
+            <span class="spacer"></span>
+            <span class="badge"><strong>Edit rows</strong> to correct cycle/job/step/type — timestamps stay intact</span>
+          </div>
+
+          <div style="overflow:auto; border:1px solid var(--line); border-radius: 14px; margin-top:12px">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cycle</th>
+                  <th>Job</th>
+                  <th>Step</th>
+                  <th>Type</th>
+                  <th class="mono">Start</th>
+                  <th class="mono">End</th>
+                  <th class="mono">Sec</th>
+                  <th>Note</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reviewBody"></tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="floating-help" id="helpBtn" title="Quick FAQ / Training">?</div>
+  <aside class="drawer" id="helpDrawer" aria-hidden="true">
+    <div class="dh">
+      <h3>Quick Help (built-in training)</h3>
+      <span class="spacer"></span>
+      <button class="btn small" data-action="closeHelp">Close</button>
+    </div>
+    <div class="db">
+      <div class="callout"><b>North Star:</b> Capture reality. Correct structure in Review. Don’t lose the moment.</div>
+
+      <h4>If the operator goes back to a prior step (previous cycle)</h4>
+      <ul>
+        <li>Keep timing.</li>
+        <li>Set Work Type to <b>REWORK</b> (or add a note).</li>
+        <li>In <b>Review</b>, edit that row’s <b>Cycle #</b> to the correct cycle.</li>
+      </ul>
+
+      <h4>If you hit the wrong step</h4>
+      <ul>
+        <li>Don’t delete in the moment.</li>
+        <li>Finish the timing.</li>
+        <li>In Review, edit the <b>Step</b> and (if needed) the <b>Type</b>.</li>
+      </ul>
+
+      <h4>If there’s an interruption</h4>
+      <ul>
+        <li>Tag as <b>WAIT</b> or <b>WALK</b>.</li>
+        <li>That “waste slice” becomes visible in the Yamazumi.</li>
+      </ul>
+
+      <h4>Lean coaching prompts</h4>
+      <ul>
+        <li>What condition causes the cycle to become unstable?</li>
+        <li>What’s the next obstacle preventing flow?</li>
+        <li>What experiment can we run by end of shift?</li>
+      </ul>
+
+      <div class="callout">
+        <b>Tip:</b> Use <b>To Step Start / To Step End</b> to quickly snap the video to the current step’s timestamps.
+      </div>
+
+      <h4>Process Flow Guide</h4>
+      <p><a href="TimeStuDY_ProcessFlowGuide.html" target="_blank" rel="noopener">Open the full process flow guide</a></p>
+
+      <h4>Export / Resume</h4>
+      <ul>
+        <li>Export JSON to continue later.</li>
+        <li>Export CSV for analysis in Excel/Power BI.</li>
+        <li>Export Yamazumi PNG for leadership updates.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <div class="mh">
+        <h3 id="modalTitle">Edit Row</h3>
+        <span class="spacer"></span>
+        <button class="btn small" data-action="closeModal">Close</button>
+      </div>
+      <div class="mb" id="modalBody"></div>
+      <div class="mf">
+        <button class="btn" data-action="closeModal">Cancel</button>
+        <button class="btn primary" data-action="saveRow">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const BUILD = {
+    version: '1.0.0-final',
+    builtAt: new Date().toISOString(),
+    schema: 1
+  };
+
+  // ---------- Utilities ----------
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const pad2 = (n) => String(n).padStart(2,'0');
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+  function nowIsoLocal(){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = pad2(d.getMonth()+1);
+    const day = pad2(d.getDate());
+    const hh = pad2(d.getHours());
+    const mm = pad2(d.getMinutes());
+    const ss = pad2(d.getSeconds());
+    return `${y}-${m}-${day}T${hh}:${mm}:${ss}`;
+  }
+
+  function humanTime(sec){
+    if (sec == null || !isFinite(sec)) return '—';
+    const s = Math.max(0, Math.round(sec));
+    const m = Math.floor(s/60);
+    const r = s % 60;
+    return m ? `${m}:${pad2(r)}` : `${r}s`;
+  }
+
+  function toast(msg){
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=> el.classList.remove('show'), 2200);
+  }
+
+  function safeFilename(s){
+    return String(s || 'TimeStuDY')
+      .trim()
+      .replace(/[\/:*?"<>|]+/g,'-')
+      .replace(/\s+/g,' ')
+      .slice(0,120) || 'TimeStuDY';
+  }
+
+  function downloadBlob(blob, filename){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 0);
+  }
+
+  // ---------- App State (single source of truth) ----------
+  const state = {
+    view: 'setup', // setup | study | review
+    jobName: '',
+    steps: [], // [{id, name}]
+    video: {
+      name: null,
+      objectUrl: null
+    },
+    cycle: 1,
+    activeStepId: null,
+    activeTiming: null, // {rowId, startSec, startedAtISO}
+    workType: 'VA',
+    note: '',
+    rows: [], // captures: [{id, cycle, jobName, stepId, stepName, type, note, startSec, endSec, startISO, endISO, durationSec}]
+    edit: { rowId: null }, // modal editing target
+    resumeLoaded: false
+  };
+
+  // ---------- Elements ----------
+  const views = {
+    setup: $('#view-setup'),
+    study: $('#view-study'),
+    review: $('#view-review')
+  };
+
+  const els = {
+    pillStatus: $('#pillStatus'),
+    buildInfo: $('#buildInfo'),
+    jobName: $('#jobName'),
+    startMode: $('#startMode'),
+    videoFile: $('#videoFile'),
+    resumeFile: $('#resumeFile'),
+    stepsText: $('#stepsText'),
+
+    video: $('#video'),
+    stepsBar: $('#stepsBar'),
+    cycleLabel: $('#cycleLabel'),
+    activeStepLabel: $('#activeStepLabel'),
+    modeLabel: $('#modeLabel'),
+    workType: $('#workType'),
+    note: $('#note'),
+    statRows: $('#statRows'),
+    statCycles: $('#statCycles'),
+    statRework: $('#statRework'),
+    studySub: $('#studySub'),
+
+    reviewBody: $('#reviewBody'),
+    reviewSub: $('#reviewSub'),
+    filterCycle: $('#filterCycle'),
+    filterType: $('#filterType'),
+    yamazumi: $('#yamazumi'),
+    cycleTotals: $('#cycleTotals'),
+
+    helpBtn: $('#helpBtn'),
+    helpDrawer: $('#helpDrawer'),
+
+    modalBackdrop: $('#modalBackdrop'),
+    modalBody: $('#modalBody'),
+    modalTitle: $('#modalTitle')
+  };
+
+  // ---------- View routing ----------
+  function setView(name){
+    state.view = name;
+    Object.keys(views).forEach(k => views[k].classList.toggle('active', k === name));
+    els.pillStatus.innerHTML = `<strong>Status</strong> ${name[0].toUpperCase()+name.slice(1)}`;
+    if (name === 'setup') syncSetupUI();
+    if (name === 'study') syncStudyUI(true);
+    if (name === 'review') syncReviewUI(true);
+    closeHelp();
+    closeModal();
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+
+  // ---------- Setup ----------
+  function parseSteps(text){
+    const lines = String(text||'').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    return lines.map((name, idx) => ({ id: `s${idx+1}`, name }));
+  }
+
+  function loadVideoFile(file){
+    if (!file) return;
+    if (state.video.objectUrl) URL.revokeObjectURL(state.video.objectUrl);
+    state.video.name = file.name;
+    state.video.objectUrl = URL.createObjectURL(file);
+    els.video.src = state.video.objectUrl;
+  }
+
+  function syncSetupUI(){
+    els.buildInfo.textContent = `v${BUILD.version}`;
+    els.jobName.value = state.jobName || '';
+    els.stepsText.value = state.steps.map(s=>s.name).join('\n');
+  }
+
+  function startStudy(){
+    state.jobName = els.jobName.value.trim() || 'Untitled Study';
+    state.steps = parseSteps(els.stepsText.value);
+    if (state.steps.length === 0){
+      toast('Add at least one step.');
+      return;
+    }
+    // Video handling
+    const vf = els.videoFile.files?.[0] || null;
+    if (vf) loadVideoFile(vf);
+
+    // Resume option: if they selected resume, ensure it is loaded
+    if (els.startMode.value === 'resume' && !state.resumeLoaded){
+      toast('Load the resume JSON first (Load Resume File).');
+      return;
+    }
+
+    state.cycle = Math.max(1, state.cycle || 1);
+    if (!state.activeStepId) state.activeStepId = state.steps[0].id;
+
+    setView('study');
+    toast('Study ready.');
+  }
+
+  async function importResume(){
+    const f = els.resumeFile.files?.[0];
+    if (!f){
+      toast('Select a resume JSON file.');
+      return;
+    }
+    try{
+      const txt = await f.text();
+      const obj = JSON.parse(txt);
+      validateResume(obj);
+
+      // Adopt state
+      state.jobName = obj.jobName || 'Untitled Study';
+      state.steps = obj.steps || [];
+      state.rows = obj.rows || [];
+      state.cycle = obj.cycle || 1;
+      state.activeStepId = obj.activeStepId || (state.steps[0]?.id ?? null);
+      state.workType = obj.workType || 'VA';
+      state.note = '';
+      state.resumeLoaded = true;
+
+      // Video is not embedded in JSON. If current video selection exists, keep it.
+      // If user selected a video file now, load it.
+      const vf = els.videoFile.files?.[0] || null;
+      if (vf) loadVideoFile(vf);
+
+      // Refresh setup UI
+      syncSetupUI();
+      toast('Resume loaded.');
+    }catch(e){
+      console.error(e);
+      toast('Resume load failed. Check file.');
+    }
+  }
+
+  function validateResume(obj){
+    if (!obj || typeof obj !== 'object') throw new Error('Bad JSON');
+    if (!Array.isArray(obj.steps)) throw new Error('Missing steps');
+    if (!Array.isArray(obj.rows)) throw new Error('Missing rows');
+    // Best-effort schema tolerance; don’t hard fail on older versions
+  }
+
+  // ---------- Study ----------
+  function getStepById(id){ return state.steps.find(s=>s.id===id) || null; }
+  function setActiveStep(id){
+    if (!getStepById(id)) return;
+    state.activeStepId = id;
+    syncStudyUI();
+  }
+
+  function ensureActiveStep(){
+    if (!state.activeStepId && state.steps[0]) state.activeStepId = state.steps[0].id;
+  }
+
+  function startActiveStep(){
+    ensureActiveStep();
+    if (!state.activeStepId){ toast('No step selected.'); return; }
+    if (state.activeTiming){
+      toast('A step is already running. End it first.');
+      return;
+    }
+    const startSec = els.video.currentTime || 0;
+    const step = getStepById(state.activeStepId);
+    const rowId = `r${Date.now()}-${Math.random().toString(16).slice(2,8)}`;
+    state.activeTiming = { rowId, startSec, startedAtISO: nowIsoLocal() };
+    state.modeLabel = 'Timing';
+    toast(`Started: ${step?.name ?? 'Step'}`);
+    syncStudyUI();
+  }
+
+  function endActiveStep(){
+    if (!state.activeTiming){
+      toast('No active timing to end.');
+      return;
+    }
+    ensureActiveStep();
+    const endSec = els.video.currentTime || state.activeTiming.startSec;
+    const startSec = state.activeTiming.startSec;
+    const durationSec = Math.max(0, endSec - startSec);
+    const step = getStepById(state.activeStepId);
+    const type = els.workType.value || state.workType || 'VA';
+    const note = (els.note.value || '').trim();
+
+    const row = {
+      id: state.activeTiming.rowId,
+      cycle: state.cycle,
+      jobName: state.jobName,
+      stepId: state.activeStepId,
+      stepName: step?.name ?? '—',
+      type,
+      note,
+      startSec,
+      endSec,
+      startISO: state.activeTiming.startedAtISO,
+      endISO: nowIsoLocal(),
+      durationSec
+    };
+    state.rows.push(row);
+    state.activeTiming = null;
+    els.note.value = '';
+    toast(`Captured: ${row.stepName} (${humanTime(durationSec)})`);
+    syncStudyUI();
+  }
+
+  function cancelActiveTiming(){
+    if (!state.activeTiming){
+      toast('Nothing to cancel.');
+      return;
+    }
+    state.activeTiming = null;
+    toast('Active timing cancelled.');
+    syncStudyUI();
+  }
+
+  function toStepStart(){
+    const row = lastRowForActiveStep();
+    if (state.activeTiming){
+      els.video.currentTime = state.activeTiming.startSec;
+      toast('Video → active step start.');
+      return;
+    }
+    if (!row){ toast('No recorded start for this step yet.'); return; }
+    els.video.currentTime = row.startSec;
+    toast('Video → last start for this step.');
+  }
+
+  function toStepEnd(){
+    const row = lastRowForActiveStep();
+    if (state.activeTiming){
+      // If timing is active we don't have end yet; use current time as "end"
+      toast('Step is running — end it to snap to end.');
+      return;
+    }
+    if (!row){ toast('No recorded end for this step yet.'); return; }
+    els.video.currentTime = row.endSec;
+    toast('Video → last end for this step.');
+  }
+
+  function lastRowForActiveStep(){
+    ensureActiveStep();
+    const sid = state.activeStepId;
+    for (let i = state.rows.length-1; i>=0; i--){
+      if (state.rows[i].stepId === sid) return state.rows[i];
+    }
+    return null;
+  }
+
+  function newCycle(){
+    if (state.activeTiming){
+      toast('End or cancel active step before starting a new cycle.');
+      return;
+    }
+    state.cycle += 1;
+    toast(`Cycle ${state.cycle}`);
+    syncStudyUI();
+  }
+
+  function toggleRework(){
+    const v = els.workType.value;
+    els.workType.value = (v === 'REWORK') ? 'VA' : 'REWORK';
+    toast(`Work type: ${els.workType.value}`);
+  }
+
+  function syncStudyUI(force=false){
+    ensureActiveStep();
+    els.studySub.textContent = state.jobName ? `${state.jobName}` : '—';
+    els.cycleLabel.textContent = String(state.cycle);
+    const step = getStepById(state.activeStepId);
+    els.activeStepLabel.textContent = step?.name ?? '—';
+    els.modeLabel.textContent = state.activeTiming ? 'Timing' : 'Ready';
+    els.workType.value = state.workType = els.workType.value || state.workType || 'VA';
+
+    // Steps bar
+    els.stepsBar.innerHTML = '';
+    state.steps.forEach(s => {
+      const b = document.createElement('button');
+      b.className = 'stepbtn';
+      b.type = 'button';
+      b.textContent = s.name;
+      b.dataset.action = 'selectStep';
+      b.dataset.stepId = s.id;
+      if (s.id === state.activeStepId) b.classList.add('active');
+      // Mark done/rework (any row exists)
+      const any = state.rows.some(r => r.stepId === s.id);
+      const anyRework = state.rows.some(r => r.stepId === s.id && r.type === 'REWORK');
+      if (any) b.classList.add('done');
+      if (anyRework) b.classList.add('rework');
+      els.stepsBar.appendChild(b);
+    });
+
+    // Stats
+    els.statRows.textContent = String(state.rows.length);
+    const cycleCount = new Set(state.rows.map(r=>r.cycle)).size || 1;
+    els.statCycles.textContent = String(Math.max(cycleCount, state.cycle));
+    els.statRework.textContent = String(state.rows.filter(r=>r.type==='REWORK').length);
+  }
+
+  // ---------- Review + Yamazumi ----------
+  function syncReviewUI(force=false){
+    els.reviewSub.textContent = state.jobName ? `${state.jobName}` : '—';
+
+    // Filters
+    const cycles = Array.from(new Set(state.rows.map(r=>r.cycle))).sort((a,b)=>a-b);
+    els.filterCycle.innerHTML = '<option value="all">All</option>' + cycles.map(c => `<option value="${c}">Cycle ${c}</option>`).join('');
+    // Keep selection if possible
+    if (!cycles.includes(Number(els.filterCycle.value))) els.filterCycle.value = 'all';
+
+    renderReviewTable();
+    renderYamazumi();
+    renderCycleTotals();
+  }
+
+  function getFilteredRows(){
+    const cycleVal = els.filterCycle.value;
+    const typeVal = els.filterType.value;
+    return state.rows.filter(r => {
+      const okCycle = (cycleVal === 'all') ? true : (String(r.cycle) === cycleVal);
+      const okType = (typeVal === 'all') ? true : (r.type === typeVal);
+      return okCycle && okType;
+    });
+  }
+
+  function renderReviewTable(){
+    const rows = getFilteredRows();
+    els.reviewBody.innerHTML = '';
+    for (const r of rows){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="mono">${r.cycle}</td>
+        <td>${escapeHtml(r.jobName||'')}</td>
+        <td>${escapeHtml(r.stepName||'')}</td>
+        <td class="mono">${r.type||''}</td>
+        <td class="mono">${fmtSec(r.startSec)}</td>
+        <td class="mono">${fmtSec(r.endSec)}</td>
+        <td class="mono">${(r.durationSec ?? 0).toFixed(2)}</td>
+        <td>${escapeHtml(r.note||'')}</td>
+        <td>
+          <div class="table-actions">
+            <button class="btn small" data-action="editRow" data-row-id="${r.id}">Edit</button>
+            <button class="btn small danger" data-action="deleteRow" data-row-id="${r.id}">Delete</button>
+          </div>
+        </td>
+      `;
+      els.reviewBody.appendChild(tr);
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s||'')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#039;');
+  }
+
+  function fmtSec(sec){
+    if (sec == null || !isFinite(sec)) return '—';
+    const s = Math.max(0, sec);
+    const m = Math.floor(s/60);
+    const r = s - m*60;
+    return m ? `${m}:${pad2(Math.floor(r))}.${pad2(Math.floor((r%1)*100))}` : `${s.toFixed(2)}`;
+  }
+
+  const TYPE_ORDER = ['VA','NNVA','WALK','WAIT','REWORK','WASTE'];
+  const TYPE_LABEL = {
+    VA:'VA', NNVA:'NNVA', WALK:'Walk', WAIT:'Wait', REWORK:'Rework', WASTE:'Waste'
+  };
+  // Color palette (high contrast on dark background)
+  const TYPE_COLOR = {
+    VA: 'rgba(43,213,118,.9)',
+    NNVA: 'rgba(58,160,255,.9)',
+    WALK: 'rgba(255,139,58,.92)',
+    WAIT: 'rgba(255,77,77,.88)',
+    REWORK: 'rgba(255,77,77,.52)',
+    WASTE: 'rgba(170,180,210,.55)'
+  };
+
+  function summarizeByCycle(){
+    const cycles = Array.from(new Set(state.rows.map(r=>r.cycle))).sort((a,b)=>a-b);
+    const map = new Map();
+    cycles.forEach(c => {
+      const obj = { cycle: c };
+      TYPE_ORDER.forEach(t => obj[t] = 0);
+      map.set(c, obj);
+    });
+    for (const r of state.rows){
+      const obj = map.get(r.cycle) || (() => {
+        const o = { cycle: r.cycle };
+        TYPE_ORDER.forEach(t => o[t] = 0);
+        map.set(r.cycle, o);
+        return o;
+      })();
+      const t = (r.type || 'VA');
+      if (!(t in obj)) obj[t] = 0;
+      obj[t] += (r.durationSec || 0);
+    }
+    return Array.from(map.values()).sort((a,b)=>a.cycle-b.cycle);
+  }
+
+  function renderCycleTotals(){
+    const sums = summarizeByCycle();
+    if (sums.length === 0){
+      els.cycleTotals.innerHTML = '<div class="muted">No captured rows yet.</div>';
+      return;
+    }
+    let html = '';
+    for (const s of sums){
+      const total = TYPE_ORDER.reduce((acc,t)=>acc+(s[t]||0),0);
+      html += `<div style="margin-bottom:12px; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.02)">
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:baseline">
+          <div><b>Cycle ${s.cycle}</b> <span class="muted">(total ${total.toFixed(1)}s)</span></div>
+          <div class="mono muted">${humanTime(total)}</div>
+        </div>
+        <div style="margin-top:8px; display:grid; gap:6px">
+          ${TYPE_ORDER.map(t => {
+            const v = s[t]||0;
+            if (v <= 0.0001) return '';
+            return `<div class="muted" style="display:flex; justify-content:space-between"><span>${TYPE_LABEL[t]}</span><span class="mono">${v.toFixed(1)}s</span></div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+    els.cycleTotals.innerHTML = html;
+  }
+
+  function renderYamazumi(){
+    const canvas = els.yamazumi;
+    const ctx = canvas.getContext('2d');
+    const sums = summarizeByCycle();
+    const w = canvas.width, h = canvas.height;
+
+    // Clear
+    ctx.clearRect(0,0,w,h);
+
+    // Background grid
+    ctx.fillStyle = 'rgba(255,255,255,.02)';
+    ctx.fillRect(0,0,w,h);
+
+    if (sums.length === 0){
+      ctx.fillStyle = 'rgba(255,255,255,.65)';
+      ctx.font = '16px ' + getComputedStyle(document.documentElement).getPropertyValue('--sans');
+      ctx.fillText('No data yet — capture steps in Study to see Yamazumi.', 18, 42);
+      return;
+    }
+
+    const totals = sums.map(s => TYPE_ORDER.reduce((acc,t)=>acc+(s[t]||0),0));
+    const maxTotal = Math.max(...totals, 1);
+
+    const padL = 54, padR = 18, padT = 18, padB = 44;
+    const chartW = w - padL - padR;
+    const chartH = h - padT - padB;
+
+    // y-axis ticks
+    const ticks = 5;
+    ctx.strokeStyle = 'rgba(255,255,255,.10)';
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.font = '12px ' + getComputedStyle(document.documentElement).getPropertyValue('--mono');
+    for (let i=0;i<=ticks;i++){
+      const y = padT + chartH - (chartH * (i/ticks));
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(w - padR, y);
+      ctx.stroke();
+      const val = (maxTotal * (i/ticks));
+      ctx.fillText(val.toFixed(0)+'s', 10, y+4);
+    }
+
+    // Bars
+    const n = sums.length;
+    const gap = clamp(chartW / (n*10), 10, 18);
+    const barW = (chartW - gap*(n-1)) / n;
+
+    // x labels
+    ctx.fillStyle = 'rgba(255,255,255,.70)';
+    ctx.font = '12px ' + getComputedStyle(document.documentElement).getPropertyValue('--sans');
+
+    sums.forEach((s, idx) => {
+      const x = padL + idx*(barW+gap);
+      let yTop = padT + chartH;
+      // stack from bottom
+      TYPE_ORDER.forEach(t => {
+        const v = s[t] || 0;
+        if (v <= 0.0001) return;
+        const segH = (v / maxTotal) * chartH;
+        ctx.fillStyle = TYPE_COLOR[t] || 'rgba(255,255,255,.4)';
+        ctx.fillRect(x, yTop - segH, barW, segH);
+        // segment border
+        ctx.strokeStyle = 'rgba(0,0,0,.18)';
+        ctx.strokeRect(x, yTop - segH, barW, segH);
+        yTop -= segH;
+      });
+      // label
+      const label = `C${s.cycle}`;
+      ctx.fillStyle = 'rgba(255,255,255,.80)';
+      ctx.fillText(label, x + 4, padT + chartH + 26);
+      // total
+      const total = totals[idx];
+      ctx.fillStyle = 'rgba(255,255,255,.62)';
+      ctx.font = '11px ' + getComputedStyle(document.documentElement).getPropertyValue('--mono');
+      ctx.fillText(total.toFixed(0)+'s', x + 4, padT + chartH + 40);
+      ctx.font = '12px ' + getComputedStyle(document.documentElement).getPropertyValue('--sans');
+    });
+
+    // Legend
+    const lx = padL, ly = padT + 6;
+    let off = 0;
+    ctx.font = '12px ' + getComputedStyle(document.documentElement).getPropertyValue('--sans');
+    TYPE_ORDER.forEach((t,i) => {
+      const txt = TYPE_LABEL[t];
+      const bx = lx + off;
+      ctx.fillStyle = TYPE_COLOR[t];
+      ctx.fillRect(bx, ly, 10, 10);
+      ctx.strokeStyle = 'rgba(0,0,0,.18)';
+      ctx.strokeRect(bx, ly, 10, 10);
+      ctx.fillStyle = 'rgba(255,255,255,.75)';
+      ctx.fillText(txt, bx+14, ly+10);
+      off += 14 + ctx.measureText(txt).width + 18;
+    });
+  }
+
+  // ---------- Modal: Review row editor ----------
+  function openEditRow(rowId){
+    const row = state.rows.find(r=>r.id===rowId);
+    if (!row){ toast('Row not found.'); return; }
+    state.edit.rowId = rowId;
+    els.modalTitle.textContent = 'Edit Row (timestamps stay intact)';
+    els.modalBody.innerHTML = `
+      <div class="row">
+        <div>
+          <label>Cycle #</label>
+          <input type="number" id="editCycle" min="1" value="${row.cycle}">
+        </div>
+        <div>
+          <label>Job</label>
+          <input type="text" id="editJob" value="${escapeHtml(row.jobName||'').replaceAll('&amp;','&').replaceAll('&lt;','<').replaceAll('&gt;','>')}">
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div>
+          <label>Step</label>
+          <select id="editStep">
+            ${state.steps.map(s => `<option value="${s.id}" ${s.id===row.stepId?'selected':''}>${escapeHtml(s.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label>Work Type</label>
+          <select id="editType">
+            ${TYPE_ORDER.map(t => `<option value="${t}" ${t===row.type?'selected':''}>${t} — ${TYPE_LABEL[t]}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <label>Note</label>
+        <input type="text" id="editNote" value="${escapeHtml(row.note||'').replaceAll('&amp;','&').replaceAll('&lt;','<').replaceAll('&gt;','>')}">
+      </div>
+      <div class="hr"></div>
+      <div class="smallnote">
+        <div><b>Locked timestamps:</b></div>
+        <div class="mono muted">Start: ${fmtSec(row.startSec)} &nbsp;&nbsp; End: ${fmtSec(row.endSec)} &nbsp;&nbsp; Sec: ${(row.durationSec||0).toFixed(2)}</div>
+      </div>
+    `;
+    els.modalBackdrop.classList.add('open');
+    els.modalBackdrop.setAttribute('aria-hidden','false');
+  }
+
+  function closeModal(){
+    els.modalBackdrop.classList.remove('open');
+    els.modalBackdrop.setAttribute('aria-hidden','true');
+    state.edit.rowId = null;
+  }
+
+  function saveRowEdits(){
+    const rowId = state.edit.rowId;
+    if (!rowId){ closeModal(); return; }
+    const row = state.rows.find(r=>r.id===rowId);
+    if (!row){ toast('Row missing.'); closeModal(); return; }
+
+    const c = Number($('#editCycle')?.value || row.cycle);
+    row.cycle = Math.max(1, isFinite(c)?c:row.cycle);
+    row.jobName = ($('#editJob')?.value || row.jobName || '').trim() || row.jobName;
+    const sid = $('#editStep')?.value || row.stepId;
+    const step = getStepById(sid);
+    row.stepId = sid;
+    row.stepName = step?.name ?? row.stepName;
+    row.type = $('#editType')?.value || row.type;
+    row.note = ($('#editNote')?.value || '').trim();
+
+    toast('Row updated.');
+    closeModal();
+    syncReviewUI();
+    syncStudyUI();
+  }
+
+  function deleteRow(rowId){
+    const idx = state.rows.findIndex(r=>r.id===rowId);
+    if (idx === -1){ toast('Row not found.'); return; }
+    state.rows.splice(idx,1);
+    toast('Row deleted.');
+    syncReviewUI();
+    syncStudyUI();
+  }
+
+  // ---------- Export ----------
+  function exportJSON(){
+    const obj = {
+      app: 'TimeStuDY',
+      build: BUILD,
+      savedAt: nowIsoLocal(),
+      jobName: state.jobName,
+      steps: state.steps,
+      rows: state.rows,
+      cycle: state.cycle,
+      activeStepId: state.activeStepId,
+      workType: els.workType.value || state.workType || 'VA'
+    };
+    const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+    const name = safeFilename(state.jobName);
+    downloadBlob(blob, `${name}__${nowIsoLocal().replaceAll(':','-')}.json`);
+    toast('JSON exported.');
+  }
+
+  function exportCSV(){
+    const headers = ['cycle','job','step','type','start_sec','end_sec','duration_sec','note','start_iso','end_iso'];
+    const lines = [headers.join(',')];
+    for (const r of state.rows){
+      const line = [
+        r.cycle,
+        csv(r.jobName),
+        csv(r.stepName),
+        r.type,
+        num(r.startSec),
+        num(r.endSec),
+        num(r.durationSec),
+        csv(r.note),
+        csv(r.startISO),
+        csv(r.endISO)
+      ].join(',');
+      lines.push(line);
+    }
+    const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+    const name = safeFilename(state.jobName);
+    downloadBlob(blob, `${name}__${nowIsoLocal().replaceAll(':','-')}.csv`);
+    toast('CSV exported.');
+  }
+
+  function exportPNG(){
+    const canvas = els.yamazumi;
+    canvas.toBlob((blob) => {
+      if (!blob){ toast('PNG export failed.'); return; }
+      const name = safeFilename(state.jobName);
+      downloadBlob(blob, `${name}__yamazumi__${nowIsoLocal().replaceAll(':','-')}.png`);
+      toast('PNG exported.');
+    });
+  }
+
+  function csv(s){
+    const v = String(s ?? '');
+    if (/[",\n]/.test(v)) return '"' + v.replaceAll('"','""') + '"';
+    return v;
+  }
+  function num(n){ return (n==null||!isFinite(n)) ? '' : Number(n).toFixed(3); }
+
+  // ---------- Help drawer ----------
+  function openHelp(){
+    els.helpDrawer.classList.add('open');
+    els.helpDrawer.setAttribute('aria-hidden','false');
+  }
+  function closeHelp(){
+    els.helpDrawer.classList.remove('open');
+    els.helpDrawer.setAttribute('aria-hidden','true');
+  }
+  function toggleHelp(){
+    els.helpDrawer.classList.contains('open') ? closeHelp() : openHelp();
+  }
+
+  // ---------- Guide link ----------
+  function openGuide(){
+    // Open in new tab; add cache buster to avoid iOS stale content
+    const url = 'TimeStuDY_ProcessFlowGuide.html?v=' + encodeURIComponent(BUILD.builtAt);
+    window.open(url, '_blank', 'noopener');
+  }
+
+  // ---------- Navigation helpers ----------
+  function goSetup(){
+    // Pause video to avoid background audio
+    try{ els.video.pause(); }catch{}
+    setView('setup');
+    toast('Back to setup.');
+  }
+  function goStudy(){
+    setView('study');
+  }
+  function openReview(){
+    setView('review');
+  }
+
+  // ---------- Event handling (delegated + iOS-safe) ----------
+  function onAction(action, target){
+    switch(action){
+      case 'startStudy': return startStudy();
+      case 'importFromResume': return importResume();
+      case 'startStep': return startActiveStep();
+      case 'endStep': return endActiveStep();
+      case 'toStepStart': return toStepStart();
+      case 'toStepEnd': return toStepEnd();
+      case 'newCycle': return newCycle();
+      case 'markRework': return toggleRework();
+      case 'resetActiveTiming': return cancelActiveTiming();
+      case 'exportJson': return exportJSON();
+      case 'exportCsv': return exportCSV();
+      case 'exportPng': return exportPNG();
+      case 'openHelp': return openHelp();
+      case 'closeHelp': return closeHelp();
+      case 'toggleHelp': return toggleHelp();
+      case 'openGuide': return openGuide();
+      case 'goSetup': return goSetup();
+      case 'goStudy': return goStudy();
+      case 'openReview': return openReview();
+      case 'editRow': return openEditRow(target?.dataset?.rowId);
+      case 'deleteRow': return deleteRow(target?.dataset?.rowId);
+      case 'closeModal': return closeModal();
+      case 'saveRow': return saveRowEdits();
+      case 'selectStep': return setActiveStep(target?.dataset?.stepId);
+      default:
+        console.warn('Unknown action:', action);
+        toast('Action not recognized (dev issue).');
+    }
+  }
+
+  function delegatedHandler(ev){
+    const t = ev.target.closest('[data-action]');
+    if (!t) return;
+    const action = t.dataset.action;
+    if (!action) return;
+    // Prevent focus issues on iOS
+    ev.preventDefault?.();
+    onAction(action, t);
+  }
+
+  // Use pointerup for consistent behavior across mobile + desktop
+  document.addEventListener('pointerup', delegatedHandler, {passive:false});
+  // iOS Safari sometimes misses pointer events in embedded contexts; add click fallback.
+  document.addEventListener('click', delegatedHandler, {passive:false});
+
+  // Floating help button
+  els.helpBtn.addEventListener('pointerup', (e)=>{ e.preventDefault(); toggleHelp(); }, {passive:false});
+  els.helpBtn.addEventListener('click', (e)=>{ e.preventDefault(); toggleHelp(); }, {passive:false});
+
+  // Filters
+  els.filterCycle.addEventListener('change', () => { renderReviewTable(); });
+  els.filterType.addEventListener('change', () => { renderReviewTable(); });
+
+  // Work type/note keep in state
+  els.workType.addEventListener('change', () => { state.workType = els.workType.value; });
+  els.note.addEventListener('input', () => { state.note = els.note.value; });
+
+  // File input
+  els.videoFile.addEventListener('change', () => {
+    const f = els.videoFile.files?.[0];
+    if (f){ loadVideoFile(f); toast('Video loaded.'); }
+  });
+
+  // Setup mode change
+  els.startMode.addEventListener('change', () => {
+    const isResume = els.startMode.value === 'resume';
+    // Hint only; no disable to avoid iOS quirks
+    if (isResume) toast('Resume mode: load JSON, then Start Study.');
+  });
+
+  // Modal backdrop click to close (outside modal)
+  els.modalBackdrop.addEventListener('pointerup', (e)=>{
+    if (e.target === els.modalBackdrop){ closeModal(); }
+  });
+
+  // Keyboard: Esc closes modal/help
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape'){
+      if (els.modalBackdrop.classList.contains('open')) closeModal();
+      else if (els.helpDrawer.classList.contains('open')) closeHelp();
+    }
+  });
+
+  // ---------- Boot ----------
+  function boot(){
+    $('#buildInfo').textContent = `v${BUILD.version}`;
+    // Default setup text (if empty)
+    if (!els.stepsText.value.trim()){
+      els.stepsText.value = [
+        'Load part',
+        'Apply tape',
+        'Assemble',
+        'Inspect',
+        'Pack'
+      ].join('\n');
+    }
+    // Ensure video controls behavior on iOS
+    els.video.playsInline = true;
+    els.video.preload = 'metadata';
+
+    syncSetupUI();
+    setView('setup');
+    toast('Ready.');
+  }
+
+  boot();
+
+})();
+</script>
+</body>
+</html>
