@@ -1,0 +1,2696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0b0c10">
+<title>Time Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0c10;--s1:#13151c;--s2:#1a1d27;--s3:#22263200;
+  --br:#252932;--br2:#33394a;
+  --gold:#f0a500;--gold2:#ffc23a;--gdim:rgba(240,165,0,.11);
+  --grn:#2ecc71;--red:#e74c3c;--blu:#4a9eff;
+  --txt:#e2e4ef;--muted:#6b738f;--muted2:#404660;
+  --mono:'DM Mono',monospace;--head:'Syne',sans-serif;--body:'DM Sans',sans-serif;
+  --r:8px;--r2:12px;--r3:18px;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--txt);font-family:var(--body);
+  min-height:100%;height:auto;overflow:auto;position:static;width:100%;-webkit-font-smoothing:antialiased}
+.scr{position:relative;min-height:100vh;display:flex;flex-direction:column;overflow:visible}
+.scr.off{display:none!important}
+
+/* ══ TOAST ══ */
+#toastEl{
+  position:fixed;bottom:calc(80px + var(--sb));left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--gold);color:#000;font-family:var(--mono);font-size:12px;font-weight:700;
+  padding:10px 18px;border-radius:10px;z-index:99999;pointer-events:none;
+  opacity:0;transition:opacity .25s,transform .25s;white-space:nowrap;letter-spacing:.5px;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
+#toastEl.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ══ WELCOME ══ */
+#W{background:var(--bg);align-items:center;justify-content:center;padding:28px 24px}
+.logo{font-family:var(--head);font-size:52px;font-weight:800;letter-spacing:-1px;
+  color:var(--txt);line-height:1;margin-bottom:4px}
+.logo em{color:var(--gold);font-style:normal}
+.sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:4px;
+  text-transform:uppercase;margin-bottom:34px}
+.wcards{width:100%;max-width:380px;margin-bottom:28px;display:flex;flex-direction:column;gap:9px}
+.wc{display:flex;align-items:flex-start;gap:13px;background:var(--s1);border:1px solid var(--br);
+  border-radius:var(--r2);padding:13px 15px}
+.wc-n{width:25px;height:25px;border-radius:6px;background:var(--gold);color:#000;
+  font-family:var(--mono);font-size:12px;font-weight:500;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;margin-top:1px}
+.wc-t{font-size:13px;line-height:1.65;color:var(--txt)}
+.wc-t b{color:var(--gold)}
+.cta{width:100%;max-width:380px;background:var(--gold);color:#000;font-family:var(--head);
+  font-size:18px;font-weight:700;letter-spacing:.5px;padding:17px;border:none;
+  border-radius:var(--r2);cursor:pointer;-webkit-appearance:none}
+.cta:active{filter:brightness(.88)}
+
+/* ══ SETUP ══ */
+#ST{background:var(--bg)}
+.tbar{background:var(--s1);border-bottom:1px solid var(--br);
+  padding:13px 18px;padding-top:calc(13px + var(--st));
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tbar-t{font-family:var(--head);font-size:15px;font-weight:700;color:var(--gold)}
+.tbar-lnk{font-family:var(--mono);font-size:11px;color:var(--muted);
+  background:none;border:none;cursor:pointer;padding:4px 8px}
+.scroll{flex:1;overflow-y:auto;padding:16px 18px;-webkit-overflow-scrolling:touch}
+.foot{padding:13px 18px;padding-bottom:calc(16px + var(--sb));flex-shrink:0}
+.slbl{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:2px;border-bottom:1px solid var(--br);padding-bottom:5px;
+  margin:18px 0 12px}
+.slbl:first-child{margin-top:0}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:4px}
+.tbtn{background:var(--s2);border:2px solid var(--br);border-radius:var(--r2);
+  padding:15px 7px 13px;text-align:center;cursor:pointer;-webkit-appearance:none;
+  display:flex;flex-direction:column;align-items:center;gap:7px;transition:all .13s}
+.tbtn .ico{font-size:22px}
+.tbtn .lbl{font-family:var(--mono);font-size:9px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;line-height:1.4}
+.tbtn.sel{border-color:var(--gold);background:var(--gdim)}
+.tbtn.sel .lbl{color:var(--gold)}
+.tbtn:active{transform:scale(.96)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+.fg input,.fg select{width:100%;background:var(--s2);border:1px solid var(--br);
+  border-radius:var(--r);color:var(--txt);font-family:var(--body);font-size:16px;
+  padding:11px 12px;-webkit-appearance:none;transition:border-color .12s}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--gold)}
+.fg input.err{border-color:var(--red)!important}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--s2);
+  border:1px solid var(--br);border-radius:20px;padding:7px 12px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;-webkit-appearance:none;user-select:none;transition:all .12s}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--br2);flex-shrink:0}
+.chip.on{border-color:var(--gold);color:var(--gold);background:var(--gdim)}
+.chip.on .dot{background:var(--gold)}
+
+/* ══ APP ══ */
+#A{background:var(--bg)}
+.abar{background:var(--s1);border-bottom:1px solid var(--br);
+  padding:10px 13px;padding-top:calc(10px + var(--st));
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  flex-wrap:wrap;row-gap:6px}
+.alogo{font-family:var(--head);font-size:17px;font-weight:800;color:var(--txt);flex-shrink:0}
+.alogo em{color:var(--gold);font-style:normal}
+.amid{flex:1 1 100%;min-width:0;text-align:left;order:10}
+.atype{font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:1px}
+.ainfo{font-family:var(--mono);font-size:10px;color:var(--muted);
+  display:flex;align-items:center;justify-content:flex-start;gap:6px;flex-wrap:wrap}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--br2);flex-shrink:0}
+.sdot.live{background:var(--red);animation:blink .9s infinite}
+.sdot.hold{background:var(--gold)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.atimer{font-family:var(--mono);font-size:20px;color:var(--gold);letter-spacing:.5px;
+  background:var(--gdim);border:1px solid rgba(240,165,0,.22);border-radius:6px;
+  padding:5px 10px;flex-shrink:0;min-width:82px;text-align:center}
+
+/* Video */
+.vzone{background:#000;flex:1;display:flex;flex-direction:column;min-height:0}
+#vid{width:100%;flex:1;height:100%;max-height:none;object-fit:contain;display:none;background:#000}
+.vempty{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:9px;border-bottom:1px solid var(--br)}
+.vei{font-size:34px;opacity:.18}
+.vet{font-family:var(--head);font-size:15px;font-weight:700;color:var(--muted)}
+.ves{font-family:var(--mono);font-size:9px;color:var(--muted2);text-align:center;line-height:1.8}
+.vpick{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;
+  padding:10px 20px;background:var(--gold);color:#000;border:none;border-radius:var(--r);
+  cursor:pointer;margin-top:4px;-webkit-appearance:none}
+.vpick:active{filter:brightness(.88)}
+.ptrack{height:3px;background:var(--br);flex-shrink:0}
+.pfill{height:100%;background:var(--gold);width:0%;transition:width .1s linear}
+
+/* Controls */
+.ctrl{background:var(--s1);border-bottom:1px solid var(--br);
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 10px;flex-shrink:0}
+.cbtn{font-family:var(--head);font-size:12px;font-weight:700;letter-spacing:.3px;
+  padding:10px 6px;border-radius:var(--r2);border:2px solid transparent;
+  cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:opacity .1s,transform .1s}
+.cbtn:active{opacity:.72;transform:scale(.97)}
+.cbtn:disabled{opacity:.2}
+.c-go{background:var(--gold);color:#000;border-color:var(--gold);grid-column:1/-1}
+.c-step{background:transparent;color:var(--gold);border-color:var(--gold)}
+.c-end{background:transparent;color:var(--red);border-color:var(--red)}
+
+/* Tabs */
+.tabs{display:flex;align-items:center;gap:6px;padding:5px 10px;overflow-x:auto;
+  flex-shrink:0;background:var(--s2);border-bottom:1px solid var(--br)}
+.tabs::-webkit-scrollbar{display:none}
+.ctab{font-family:var(--mono);font-size:9px;padding:4px 10px;border:1px solid var(--br);
+  border-radius:20px;background:transparent;color:var(--muted);white-space:nowrap;
+  cursor:pointer;-webkit-appearance:none;transition:all .12s}
+.ctab.on{border-color:var(--gold);color:var(--gold);background:var(--gdim)}
+.tabadd{font-family:var(--mono);font-size:9px;padding:4px 9px;border:1px dashed var(--br2);
+  border-radius:20px;background:transparent;color:var(--muted);white-space:nowrap;
+  cursor:pointer;-webkit-appearance:none}
+
+/* Steps list */
+.slist{flex:0 0 auto;overflow:visible;padding:10px 12px;-webkit-overflow-scrolling:touch}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100px;gap:8px;color:var(--muted2);font-family:var(--mono);font-size:10px;text-align:center}
+.ei{font-size:24px;opacity:.12}
+
+.scard{background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);
+  padding:11px 12px;margin-bottom:8px;animation:fu .18s ease;cursor:pointer}
+.scard:active{background:var(--s3);border-color:var(--gold)}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.sc-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.sc-num{font-family:var(--mono);font-size:9px;color:var(--gold);
+  background:var(--gdim);border:1px solid rgba(240,165,0,.22);
+  border-radius:4px;padding:2px 7px;flex-shrink:0;letter-spacing:1px}
+.sc-name{font-weight:600;font-size:13px;flex:1;line-height:1.3}
+.sc-del{background:none;border:none;color:var(--muted2);font-size:17px;
+  padding:2px 6px;cursor:pointer}
+.sc-edit{font-size:15px;color:var(--muted);margin-right:6px;pointer-events:none;opacity:.7}
+.sc-del:active{color:var(--red)}
+.sc-times{font-family:var(--mono);font-size:10px;color:var(--muted);
+  display:flex;flex-wrap:wrap;gap:9px;margin-bottom:4px}
+.sc-times b{color:var(--blu);font-weight:400}
+.sc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.tag{font-family:var(--mono);font-size:9px;border-radius:4px;padding:2px 7px;border:1px solid}
+.t-vcw{color:#2ecc71;border-color:rgba(46,204,113,.35);background:rgba(46,204,113,.08)}
+.t-inc{color:#f0a500;border-color:rgba(240,165,0,.35);background:rgba(240,165,0,.08)}
+.t-wst{color:#e74c3c;border-color:rgba(231,76,60,.35);background:rgba(231,76,60,.08)}
+.t-uns{color:#ff7675;border-color:rgba(255,118,117,.35);background:rgba(255,118,117,.08)}
+.t-dif{color:#a29bfe;border-color:rgba(162,155,254,.35);background:rgba(162,155,254,.08)}
+.t-cyc{color:#74b9ff;border-color:rgba(116,185,255,.35);background:rgba(116,185,255,.08)}
+.t-per{color:#55efc4;border-color:rgba(85,239,196,.35);background:rgba(85,239,196,.08)}
+.t-abn{color:#fdcb6e;border-color:rgba(253,203,110,.35);background:rgba(253,203,110,.08)}
+.sc-detail{font-size:11px;color:var(--muted);line-height:1.6;margin-top:4px}
+.sc-detail strong{color:var(--txt);font-weight:500}
+
+/* Sum + export */
+.sumbar{background:var(--s2);border-top:1px solid var(--br);
+  padding:7px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.sumlbl{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.sumval{font-family:var(--mono);font-size:17px;color:var(--gold)}
+.xbar{background:var(--s1);border-top:1px solid var(--br);
+  display:flex;gap:8px;padding:8px 12px;padding-bottom:calc(10px + var(--sb));flex-shrink:0}
+.xbtn{flex:1;font-family:var(--head);font-size:11px;font-weight:700;letter-spacing:.3px;
+  text-transform:uppercase;padding:11px 6px;border-radius:var(--r);
+  cursor:pointer;-webkit-appearance:none;transition:opacity .12s,transform .1s}
+.xbtn:active{opacity:.75;transform:scale(.97)}
+.xbtn:disabled{opacity:.2}
+.x-grn{background:var(--grn);color:#000;border:none;flex:1.6}
+.x-all{background:transparent;color:var(--blu);border:2px solid var(--blu)}
+.x-csv{background:transparent;color:var(--muted);border:2px solid var(--br2)}
+.x-json{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+.x-load{background:transparent;color:var(--txt);border:2px dashed var(--br2);flex:1.2}
+
+/* Translation status banner */
+.xlat-banner{
+  display:none;background:rgba(240,165,0,.12);border-bottom:1px solid rgba(240,165,0,.25);
+  padding:6px 14px;font-family:var(--mono);font-size:10px;color:var(--gold);
+  text-align:center;letter-spacing:.5px;flex-shrink:0;
+}
+.xlat-banner.show{display:block}
+
+/* ══ CAPTURE SHEET ══ */
+#ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);
+  display:none;align-items:flex-end;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#ov.open{display:flex}
+.bsheet{width:100%;background:var(--s1);border-top:2px solid var(--gold);
+  border-radius:20px 20px 0 0;padding:17px 18px;
+  padding-bottom:calc(20px + var(--sb));
+  animation:sup .22s cubic-bezier(.4,0,.2,1);max-height:92vh;overflow-y:auto}
+
+/* BUG-012 FIX: iOS keyboard pushes sheet, ensure Save always visible */
+@supports (height: 100dvh){
+  .bsheet{ max-height:80dvh; }
+}
+
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.bgrip{width:36px;height:4px;background:var(--br2);border-radius:2px;margin:0 auto 15px}
+.bhead{font-family:var(--head);font-size:13px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--gold);margin-bottom:13px;
+  display:flex;align-items:center;gap:8px}
+.bhead::before{content:'';width:8px;height:8px;border-radius:50%;
+  background:var(--red);animation:blink .9s infinite;flex-shrink:0}
+.trow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:15px}
+.tbox{background:var(--bg);border:1px solid var(--br);border-radius:var(--r);padding:8px 10px}
+.tbl{font-family:var(--mono);font-size:9px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.tv{font-family:var(--mono);font-size:16px;color:var(--grn);letter-spacing:.5px}
+.sf{margin-bottom:10px}
+.sf label{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}
+.sf input,.sf textarea,.sf select{width:100%;background:var(--bg);border:1px solid var(--br);
+  border-radius:var(--r);color:var(--txt);font-family:var(--body);font-size:16px;
+  padding:11px 12px;-webkit-appearance:none;resize:none;transition:border-color .12s}
+.sf input:focus,.sf textarea:focus,.sf select:focus{outline:none;border-color:var(--gold)}
+.sf input.err{border-color:var(--red)!important}
+.ssec{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:2px;border-bottom:1px solid var(--br);padding-bottom:4px;margin:12px 0 8px}
+.cchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.cc{font-family:var(--mono);font-size:10px;border-radius:20px;padding:7px 12px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;border:1px solid var(--br);
+  background:var(--bg);color:var(--muted);-webkit-appearance:none;user-select:none;
+  transition:all .12s}
+.cc .cd{width:7px;height:7px;border-radius:50%;background:var(--br2);flex-shrink:0}
+.cc.on{border-color:var(--ck,var(--gold));color:var(--ck,var(--gold))}
+.cc.on .cd{background:var(--ck,var(--gold))}
+.sacts{display:flex;gap:9px;margin-top:13px;position:sticky;bottom:0;background:var(--s1);padding-top:10px}
+.ssave{flex:2;font-family:var(--head);font-size:16px;font-weight:700;padding:15px;
+  background:var(--grn);color:#000;border:none;border-radius:var(--r2);cursor:pointer}
+.ssave:active{filter:brightness(.88)}
+.sdis{flex:1;font-family:var(--head);font-size:13px;font-weight:700;padding:15px;
+  background:transparent;color:var(--muted);border:1px solid var(--br);
+  border-radius:var(--r2);cursor:pointer}
+.sdis:active{background:var(--s2)}
+
+/* ERACS validation indicator */
+.eracs-hint{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px;letter-spacing:.5px}
+.eracs-hint.valid{color:var(--grn)}
+.eracs-hint.invalid{color:var(--red)}
+
+body{overscroll-behavior:none}
+
+/* Version / revision stamp */
+.ver-inline{display:inline-block;margin-left:10px;font-size:12px;font-weight:700;letter-spacing:.2px;color:#cfe8ff;background:rgba(0,122,204,.35);border:1px solid rgba(0,122,204,.55);padding:2px 8px;border-radius:999px;vertical-align:middle}
+.rev-stamp{position:fixed;right:10px;bottom:10px;z-index:9999;font-size:12px;font-weight:800;letter-spacing:.3px;color:#cfe8ff;background:rgba(11,12,16,.75);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);padding:6px 10px;border-radius:10px;pointer-events:none;user-select:none}
+
+/* Layout */
+.abar{padding:12px 13px;padding-top:calc(12px + var(--st));align-items:flex-start}
+.amid{padding-top:1px}
+.ainfo{flex-wrap:wrap;gap:8px;line-height:1.35}
+.atimer{margin-top:2px}
+.amain{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
+
+.videoRow{display:flex;gap:10px;padding:10px 12px 8px;align-items:stretch}
+.ctrlSide{width:150px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+@media (max-width:520px){.ctrlSide{width:122px}}
+.videoCol{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+
+.vzone{background:#000;flex:1;display:flex;flex-direction:column;min-height:300px;border-radius:10px;overflow:hidden}
+#vid{width:100%;flex:1;height:100%;max-height:none;object-fit:contain;display:none;background:#000}
+.vempty{flex:1;height:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;border-bottom:none}
+
+.ptrack{height:3px;background:var(--br);flex-shrink:0;margin-top:8px}
+.pfill{height:100%;background:var(--gold);width:0%;transition:width .1s linear}
+
+.tabs{padding:6px 12px}
+.ctrl{display:none}
+
+.slist{flex:1;min-height:380px;padding:10px 12px}
+
+.rev-stamp{
+  position:fixed;
+  top:calc(10px + var(--st));
+  right:10px;
+  left:auto;
+  bottom:auto;
+  opacity:.65;
+}
+
+.videoRow{display:flex;gap:10px;padding:10px 12px 6px;align-items:stretch}
+.ctrlSide{width:148px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+@media (max-width:520px){.ctrlSide{width:120px}}
+.videoCol{flex:1;min-width:0;display:flex;flex-direction:column}
+.videoCol .vzone{flex:1;min-height:360px;height:74vh;max-height:84vh}
+@media (max-width:680px){.videoCol .vzone{min-height:420px;height:78vh;max-height:88vh}}
+
+/* ══ REVIEW TABLE / FAQ ══ */
+.rvTable th,.rvTable td{padding:10px 10px;border-bottom:1px solid var(--br);font-family:var(--mono);font-size:11px;white-space:nowrap}
+.rvTable th{position:sticky;top:0;background:var(--s2);z-index:2;color:var(--muted);text-align:left}
+.rvTable td{color:var(--txt)}
+.rvTable tr:hover td{background:rgba(74,158,255,.06)}
+.rvTag{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--br2);border-radius:999px;font-size:10px;color:var(--muted)}
+.rvDot{width:8px;height:8px;border-radius:999px;display:inline-block}
+.rvAct{display:flex;gap:6px;justify-content:flex-end}
+.rvBtn{border:1px solid var(--br2);background:transparent;color:var(--muted);padding:6px 10px;border-radius:10px;font-family:var(--mono);font-size:11px;cursor:pointer}
+.rvBtn:hover{color:var(--txt);border-color:var(--gold)}
+.lbl{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px}
+.inp{width:100%;background:var(--bg);border:1px solid var(--br);color:var(--txt);border-radius:12px;padding:10px 12px;font-family:var(--mono);font-size:12px}
+.ro{background:rgba(255,255,255,.03);border:1px solid var(--br);border-radius:12px;padding:10px 12px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.hcard{border:1px solid var(--br);border-radius:14px;padding:12px;background:rgba(0,0,0,.08)}
+.ht{font-family:var(--head);font-size:13px;margin-bottom:6px}
+.hb{font-family:var(--body);font-size:13px;line-height:1.45;color:var(--txt)}
+#helpPanel.open{transform:translateX(0)!important}
+
+
+#RV{height:100vh;overflow-y:scroll;-webkit-overflow-scrolling:touch}
+#RV::-webkit-scrollbar{width:10px}
+#RV::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:999px}
+#RV::-webkit-scrollbar-track{background:rgba(255,255,255,.06)}
+#yamCanvas{touch-action:pan-y}
+
+</style>
+</head>
+<body>
+
+<!-- BUG-001 FIX: Toast element defined in DOM -->
+<div id="toastEl"></div>
+
+<!-- Startup overlay -->
+<div id="startup" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px">
+  <div style="background:#0b1220;border:1px solid rgba(255,255,255,.15);border-radius:14px;max-width:520px;width:100%;padding:16px 16px 14px;box-shadow:0 18px 60px rgba(0,0,0,.45)">
+    <div style="font-weight:800;font-size:18px;margin-bottom:6px">Time Study</div>
+    <div style="opacity:.9;font-size:13px;line-height:1.35;margin-bottom:12px">
+      Choose an option. If you resume, you'll load a JSON file and your study will populate immediately.
+      Then re-select the video file to continue capturing.
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button id="btnStartNewStudy" class="cbtn" type="button" style="flex:1;min-width:180px">Start New Study</button>
+      <button id="btnResumeStudy" class="cbtn c-step" type="button" style="flex:1;min-width:180px">Resume Prior Study (JSON)</button>
+    </div>
+    
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <a id="btnGuideLink" class="pill" href="TimeStuDY_ProcessFlowGuide.html" target="_blank" rel="noopener"
+         style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--br2);background:transparent;color:var(--muted);padding:8px 12px;border-radius:999px;font-family:var(--mono);font-size:11px;cursor:pointer">
+        Process Flow Guide
+      </a>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Opens in a new tab (works on iOS).</span>
+    </div>
+
+<div style="margin-top:10px;opacity:.8;font-size:12px">
+      Tip: JSON resume works without a video selected.
+    </div>
+    <input id="resumeJsonInput" type="file" accept="application/json,.json" style="display:none" />
+  </div>
+</div>
+
+<!-- ══════ WELCOME ══════ -->
+<div class="scr" id="W">
+  <div class="logo">Time <em>Study</em> <span class="ver-inline" id="verInline"></span></div>
+  <div class="sub">Industrial Engineering · Time Study</div>
+  <div class="wcards">
+    <div class="wc"><div class="wc-n">1</div><div class="wc-t">Choose study type: <b>3C Work Observation</b>, <b>Job Instruction Sheet</b>, or <b>Job Breakdown Sheet</b></div></div>
+    <div class="wc"><div class="wc-n">2</div><div class="wc-t">Fill in study info. Load your process video from Camera Roll or Files.</div></div>
+    <div class="wc"><div class="wc-n">3</div><div class="wc-t">Tap <b>Start</b>, then <b>Step End</b> after each step. Video pauses — fill in all details for that step.</div></div>
+    <div class="wc"><div class="wc-n">4</div><div class="wc-t">Tap <b>Export .xlsx</b> — a perfectly formatted file matching your <b>official template</b> downloads instantly.</div></div>
+  </div>
+  <button class="cta" id="btnW">Get Started →</button>
+</div>
+
+<!-- ══════ SETUP ══════ -->
+<div class="scr off" id="ST">
+  <div class="tbar">
+    <button class="tbar-lnk" id="btnStBack" style="color:var(--gold);padding-left:0">← Back</button>
+    <div class="tbar-t" style="flex:1;text-align:center">Time Study</div>
+    <button class="tbar-lnk" id="btnSkip">Skip →</button>
+  </div>
+  <div class="scroll">
+    <div class="slbl">Study Type</div>
+    <div class="tgrid">
+      <button class="tbtn sel" data-t="3c"><span class="ico">📋</span><span class="lbl">3C Work<br>Observation</span></button>
+      <button class="tbtn" data-t="ji"><span class="ico">📄</span><span class="lbl">Job<br>Instruction</span></button>
+      <button class="tbtn" data-t="jb"><span class="ico">🔧</span><span class="lbl">Job<br>Breakdown</span></button>
+    </div>
+    <div class="slbl">Study Information</div>
+    <div class="frow">
+      <div class="fg"><label>Process / Station</label><input id="fProc" type="text" placeholder="e.g. Wrap Station"/></div>
+      <div class="fg"><label>Operator</label><input id="fOp" type="text" placeholder="Name or ID"/></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Department / Area</label><input id="fDept" type="text" placeholder="e.g. Assembly"/></div>
+      <div class="fg"><label>Analyst / Observer</label><input id="fAna" type="text" placeholder="Your name"/></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Team Leader</label><input id="fLead" type="text" placeholder="Name"/></div>
+      <div class="fg"><label>Supervisor</label><input id="fSup" type="text" placeholder="Name"/></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Part # / Description</label><input id="fPart" type="text" placeholder="Part No."/></div>
+      <div class="fg"><label>Date</label><input id="fDate" type="text"/></div>
+    </div>
+    <div id="tiFields">
+      <div class="frow">
+        <div class="fg"><label>Takt Time (secs)</label><input id="fTakt" type="number" placeholder="e.g. 216"/></div>
+        <div class="fg"><label>Target Cycle (secs)</label><input id="fCyc" type="number" placeholder="e.g. 72"/></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>Required Quantity</label><input id="fQty" type="text" placeholder="e.g. 1 PX/1 SL"/></div>
+        <!-- BUG-014 FIX: STD WIP field added to setup so it gets collected in meta -->
+        <div class="fg"><label>STD WIP</label><input id="fStdWip" type="text" placeholder="e.g. 2"/></div>
+      </div>
+    </div>
+    <div id="jbFields" style="display:none">
+      <div class="fg"><label>Tools &amp; Materials</label><input id="fTools" type="text" placeholder="e.g. PTI, Crowbar, Lifting Strap"/></div>
+      <div class="fg"><label>PPE Required</label>
+        <div class="chips" id="ppeChips">
+          <button class="chip" data-p="Safety Boots"><span class="dot"></span>Safety Boots</button>
+          <button class="chip" data-p="Safety Glasses"><span class="dot"></span>Safety Glasses</button>
+          <button class="chip" data-p="Hearing Protection"><span class="dot"></span>Hearing Prot.</button>
+          <button class="chip" data-p="Safety Gloves"><span class="dot"></span>Safety Gloves</button>
+          <button class="chip" data-p="Safety Sleeves"><span class="dot"></span>Safety Sleeves</button>
+          <button class="chip" data-p="Safety Jacket"><span class="dot"></span>Safety Jacket</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><button class="cta" id="btnGo">Start Study →</button></div>
+</div>
+
+<!-- ══════ APP ══════ -->
+<div class="scr off" id="A">
+  <div class="abar">
+    <button id="btnABack" style="background:none;border:none;color:var(--gold);font-family:var(--mono);font-size:12px;cursor:pointer;padding:4px 8px 4px 0;flex-shrink:0">← Setup</button>
+    <div class="alogo" style="flex-shrink:0">Time <em>Study</em></div>
+    <div class="amid">
+      <div class="atype" id="aTypeLbl">3C WORK OBSERVATION</div>
+      <div class="ainfo"><span class="sdot" id="sdot"></span><span id="aInfoLbl">Cycle 1 · 0 steps</span></div>
+    </div>
+    <button id="btnNewStudy" title="Start New Study" style="background:none;border:1px solid var(--br);color:var(--muted);font-family:var(--mono);font-size:10px;border-radius:8px;padding:6px 8px;cursor:pointer;flex-shrink:0">⟲ Refresh</button>
+    <div class="atimer" id="timerEl">00:00.0</div>
+  </div>
+
+  <!-- BUG-007 FIX: Translation status banner -->
+  <div class="xlat-banner" id="xlatBanner">⟳ Translating to Spanish… this may take a moment</div>
+
+  <div class="amain" id="amain">
+  <div class="videoRow" id="videoRow">
+    <div class="ctrlSide" id="ctrlSide">
+      <button class="cbtn c-go"   id="btnStart" disabled>▶ Start</button>
+      <button class="cbtn c-step" id="btnStep"  disabled>◼ Step End</button>
+      <div class="rewbar" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+        <button class="ctab" id="btnPauseMain" type="button" title="Play / Pause">⏸ Pause</button>
+        <button class="ctab" id="btnRw2Main" type="button" title="Rewind 2 seconds">⟲ -2s</button>
+        <button class="ctab" id="btnJStartMain" type="button" title="Jump to current step start">⟲ To Step Start</button>
+        <button class="ctab" id="btnJEndMain" type="button" title="Jump to current step end">⟳ To Step End</button>
+        <button class="ctab" id="btnSetEndMain" type="button" title="Set current step end here">✓ Set End</button>
+      </div>
+      <button class="cbtn c-end"  id="btnEnd"   disabled>◉ End Cycle</button>
+    </div>
+
+    <div class="videoCol" id="videoCol">
+      <div class="vzone">
+        <div class="vempty" id="vEmpty">
+          <div class="vei">🎬</div>
+          <div class="vet">Load Process Video</div>
+          <div class="ves">Camera Roll · Files · iCloud Drive</div>
+          <button class="vpick" id="btnPick">Choose Video</button>
+        </div>
+        <video id="vid" playsinline webkit-playsinline preload="metadata"></video>
+      </div>
+      <div class="ptrack"><div class="pfill" id="pFill"></div></div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="ctab on" data-i="0">Cycle 1</button>
+    <button class="tabadd" id="btnAddCyc">＋ Cycle</button>
+  </div>
+
+  <div class="tabs" id="jbBar" style="display:none;gap:8px;align-items:center">
+    <button class="ctab" id="btnSelMode">Select Steps</button>
+    <button class="ctab" id="btnGroupSel" disabled>Group as WHAT…</button>
+    <button class="ctab" id="btnClearSel" disabled>Clear</button>
+    <span id="selCount" style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:auto;padding-right:6px"></span>
+  </div>
+
+  <div class="slist" id="sList">
+    <div class="empty" id="emptyEl"><div class="ei">⏱</div><div>No steps yet.<br>Load a video and tap Start.</div></div>
+  </div>
+
+  <div class="sumbar" id="sumBar" style="display:none">
+    <div class="sumlbl" id="sumLbl"></div>
+    <div class="sumval" id="sumVal"></div>
+  </div>
+</div>
+<div class="xbar">
+    <select id="expLang" title="Export Language" style="flex:0.9;background:transparent;color:var(--muted);border:2px solid var(--br2);border-radius:var(--r);padding:10px 8px;font-family:var(--mono);font-size:10px">
+      <option value="both">Export: ES+EN</option>
+      <option value="en">Export: English</option>
+      <option value="es">Export: Español</option>
+    </select>
+    <button class="xbtn x-grn" id="btnXlsx" disabled>⬇ Export .xlsx</button>
+    <button class="xbtn x-all"  id="btnAll"  disabled>All Cycles</button>
+    <button class="xbtn x-csv"  id="btnCsv"  disabled>CSV</button>
+    <button class="xbtn x-json" id="btnJson" disabled>JSON</button>
+    <button class="xbtn x-rev" id="btnReview" disabled>Review</button>
+    <button class="xbtn x-load" id="btnLoadJson">Load JSON</button>
+    <input type="file" id="jsonIn" accept="application/json" style="display:none">
+  </div>
+</div>
+
+<!-- ══════ CAPTURE SHEET ══════ -->
+<div id="ov">
+  <div class="bsheet">
+    <div class="bgrip"></div>
+    <div class="bhead" id="bHead">Step Captured</div>
+    <div class="trow">
+      <div class="tbox"><div class="tbl">Video Start</div><div class="tv" id="tSt">—</div></div>
+      <div class="tbox"><div class="tbl">Video End</div><div class="tv" id="tEn">—</div></div>
+      <div class="tbox"><div class="tbl">Duration</div><div class="tv" id="tDu">—</div></div>
+      <div class="tbox"><div class="tbl">Study Elapsed</div><div class="tv" id="tEl">—</div></div>
+    </div>
+    <div class="adjrow" style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px">
+      <button class="ctab" id="btnJStart" type="button">⟲ To Start</button>
+      <button class="ctab" id="btnRw2" type="button">⟲ -2s</button>
+      <button class="ctab" id="btnPlayPrev" type="button">▶︎ Preview</button>
+      <button class="ctab" id="btnSetEnd" type="button">✓ Set End Here</button>
+      <button class="ctab" id="btnEndM" type="button">-0.5s</button>
+      <button class="ctab" id="btnEndP" type="button">+0.5s</button>
+      <button class="ctab" id="btnJEnd" type="button">To End ⟳</button>
+    </div>
+
+    <div class="sf"><label>Reuse Prior Entry (optional)</label>
+      <select id="priorSel"><option value="">— Select prior —</option></select></div>
+
+    <div class="sf"><label id="snLbl">Work Step *</label>
+      <input type="text" id="sName" placeholder="Describe this step" autocomplete="off"/></div>
+
+    <!-- ── 3C FIELDS ── -->
+    <div id="f3c">
+      <div class="sf">
+        <label>ERACS <span style="font-weight:400;font-size:11px;color:var(--muted)">(E=Eliminate, R=Rearrange, A=Add/Subtract, C=Combine, S=Simplify)</span></label>
+<details style="margin-top:10px"><summary style="cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--muted)">Optional: ERACS + Notes</summary>
+        <!-- BUG-013 FIX: ERACS now uses select to enforce valid values -->
+        <select id="cEracs" style="width:100%;background:var(--bg);border:1px solid var(--br);border-radius:var(--r);color:var(--txt);font-family:var(--body);font-size:16px;padding:11px 12px;-webkit-appearance:none;">
+          <option value="">— None selected —</option>
+          <option value="E">E — Eliminate</option>
+          <option value="R">R — Rearrange</option>
+          <option value="A">A — Add / Subtract</option>
+          <option value="C">C — Combine</option>
+          <option value="S">S — Simplify</option>
+        </select>
+      </div>
+      <div class="ssec">Work Content <span style="font-size:9px;color:var(--muted);font-weight:400">— select ONE (mutually exclusive)</span></div>
+      <!-- BUG-013 FIX: Work content enforced as mutually exclusive radio-style -->
+      <div class="cchips" id="wcChips">
+        <button class="cc" data-k="vcw"        style="--ck:#2ecc71"><span class="cd"></span>Value Creating (VA)</button>
+        <button class="cc" data-k="incidental" style="--ck:#f0a500"><span class="cd"></span>Required (NNVA)</button>
+        <button class="cc" data-k="walk"       style="--ck:#74b9ff"><span class="cd"></span>Walk / Travel</button>
+        <button class="cc" data-k="wait"       style="--ck:#b2bec3"><span class="cd"></span>Wait / Delay</button>
+        <button class="cc" data-k="rework"     style="--ck:#ff7675"><span class="cd"></span>Rework / Redo</button>
+        <button class="cc" data-k="waste"      style="--ck:#e74c3c"><span class="cd"></span>Other Waste</button>
+      </div>
+      <div class="ssec">Characteristics <span style="font-size:9px;color:var(--muted);font-weight:400">— mark all that apply</span></div>
+      <div class="cchips">
+        <button class="cc" data-k="unsafe"    style="--ck:#ff7675"><span class="cd"></span>Unsafe Work</button>
+        <button class="cc" data-k="difficult" style="--ck:#a29bfe"><span class="cd"></span>Difficult Work</button>
+      </div>
+      <div class="ssec">Category <span style="font-size:9px;color:var(--muted);font-weight:400">— select ONE</span></div>
+      <!-- BUG-013 FIX: Category is also mutually exclusive -->
+      <div class="cchips" id="catChips">
+        <button class="cc" data-k="cyclical" style="--ck:#74b9ff"><span class="cd"></span>Cyclical</button>
+        <button class="cc" data-k="periodic" style="--ck:#55efc4"><span class="cd"></span>Periodic</button>
+        <button class="cc" data-k="abnormal" style="--ck:#fdcb6e"><span class="cd"></span>Abnormal</button>
+      </div>
+      <div class="sf" style="margin-top:10px"><label>Notes (optional)</label>
+        <input type="text" id="cNote3c" placeholder="Any observation about this step"/></div>
+</details>
+    </div>
+
+    <!-- ── JI FIELDS ── -->
+    <div id="fJI" style="display:none">
+      <div class="ssec">Quality Check</div>
+      <div class="sf"><label>Sampling Method</label>
+        <input type="text" id="jiSamp" placeholder="e.g. 100% Visual, 1st PC, Every 10th"/></div>
+      <div class="sf"><label>Acceptance Criteria</label>
+        <input type="text" id="jiCrit" placeholder="e.g. No voids, flush ±0.5mm, label aligned"/></div>
+      <div class="ssec">Additional Details</div>
+      <div class="sf"><label>Notes / Special Instructions</label>
+        <textarea id="jiNote" rows="2" placeholder="Safety cautions, tips, common errors to avoid…"></textarea></div>
+      <div class="sf"><label>Tools / Materials Used</label>
+        <input type="text" id="jiTools" placeholder="e.g. Torque wrench, adhesive, scanner"/></div>
+    </div>
+
+    <!-- ── JB FIELDS ── -->
+    <div id="fJB" style="display:none">
+      <div class="ssec">Step Breakdown</div>
+      <div class="sf"><label>Important Step — WHAT? *</label>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted2);line-height:1.6;margin-top:4px">Tip: You can time granular micro-steps, then later multi-select and <b style="color:var(--gold)">Group as WHAT</b> to build the final Job Breakdown.</div>
+        <input type="text" id="jbWhat" placeholder="What major action is performed?"/></div>
+      <div class="sf"><label>Key Points — HOW?</label>
+        <textarea id="jbHow" rows="3" placeholder="How to do it correctly — technique, sequence, feel, sound, position, torque values…"></textarea></div>
+      <div class="sf"><label>Reasons — WHY?</label>
+        <textarea id="jbWhy" rows="2" placeholder="Why this matters — safety, quality, damage prevention, customer impact…"></textarea></div>
+      <div class="sf"><label>Safety Notes</label>
+        <input type="text" id="jbSafe" placeholder="Any specific safety concern for this step"/></div>
+    </div>
+
+    <div class="sacts">
+      <button class="ssave" id="btnSave">✓ Save &amp; Continue</button>
+      <button class="sdis"  id="btnDis">Discard</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fIn" accept="video/*" style="display:none">
+
+
+<!-- ══════ REVIEW ══════ -->
+<div class="scr off" id="RV">
+  <div class="abar">
+    <button id="btnRVBack" style="background:none;border:none;color:var(--gold);font-family:var(--mono);font-size:12px;cursor:pointer;padding:4px 8px 4px 0;flex-shrink:0">← Back</button>
+    <div class="alogo" style="flex-shrink:0">Review <em>+ Yamazumi</em></div>
+    <div class="amid">
+      <div class="atype" id="rvLbl">Edit steps · Reassign cycles · Classify work</div>
+      <div class="ainfo"><span class="sdot" style="background:var(--blu)"></span><span id="rvInfo">0 rows</span></div>
+    </div>
+    <button id="btnYamPng" title="Export Yamazumi PNG" style="background:none;border:1px solid var(--br);color:var(--muted);border-radius:10px;padding:7px 10px;font-family:var(--mono);font-size:11px;cursor:pointer">⬇ PNG</button>
+  </div>
+
+  <div class="pad" style="padding:16px 14px 120px">
+    <div class="grid" style="display:grid;grid-template-columns:1fr;gap:14px">
+      <div class="card" style="background:var(--s1);border:1px solid var(--br);border-radius:var(--r3);padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.4px">YAMAZUMI (by cycle)</div>
+          <button class="pill" id="btnYamCsv" style="border:1px solid var(--br2);background:transparent;color:var(--muted);padding:6px 10px;border-radius:999px;font-family:var(--mono);font-size:11px;cursor:pointer">CSV</button>
+        </div>
+        <div style="height:260px;overflow:hidden;border-radius:12px">
+        <canvas id="yamCanvas" height="260" style="width:100%;height:260px;display:block;background:var(--bg);border:1px solid var(--br);border-radius:12px"></canvas>
+        </div>
+        <div id="yamLegend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--muted)"></div>
+      </div>
+
+      <div class="card" style="background:var(--s1);border:1px solid var(--br);border-radius:var(--r3);padding:14px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.4px">REVIEW TABLE</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="pill" id="btnRVRefresh" style="border:1px solid var(--br2);background:transparent;color:var(--muted);padding:6px 10px;border-radius:999px;font-family:var(--mono);font-size:11px;cursor:pointer">Refresh</button>
+          </div>
+        </div>
+        <div style="overflow:auto;border:1px solid var(--br);border-radius:12px">
+          <table class="rvTable" style="width:100%;border-collapse:collapse;min-width:900px">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Cycle</th>
+                <th>Job</th>
+                <th>Step</th>
+                <th>Work Type</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Dur</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rvTbody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:1.35">
+          Tip: capture reality, then fix structure here. Reassign steps across cycles/jobs without changing timestamps.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ FAQ / TRAINING ══════ -->
+<button id="btnHelp" title="Quick help" style="position:fixed;right:14px;bottom:calc(14px + var(--sb));z-index:99998;width:44px;height:44px;border-radius:999px;border:1px solid var(--br2);background:var(--s1);color:var(--txt);font-family:var(--head);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.45)">?</button>
+<div id="helpPanel" aria-hidden="true" style="position:fixed;top:0;right:0;height:100%;width:min(420px,92vw);background:rgba(19,21,28,.98);border-left:1px solid var(--br);transform:translateX(100%);display:none;pointer-events:none;visibility:hidden;transition:transform .25s ease;z-index:99999;padding-top:calc(14px + var(--st));padding-bottom:calc(14px + var(--sb));display:flex;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid var(--br)">
+    <div style="font-family:var(--head);font-size:16px">Quick FAQ / Training</div>
+    <button id="btnHelpClose" style="background:none;border:1px solid var(--br2);color:var(--muted);border-radius:10px;padding:6px 10px;font-family:var(--mono);font-size:11px;cursor:pointer">Close</button>
+  </div>
+  <div id="helpBody" style="padding:12px 14px;overflow:auto;display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2px">
+    <a href="TimeStuDY_ProcessFlowGuide.html" target="_blank" rel="noopener"
+       style="text-decoration:none;border:1px solid var(--br2);background:transparent;color:var(--muted);padding:6px 10px;border-radius:999px;font-family:var(--mono);font-size:11px;cursor:pointer">
+      Open Process Flow Guide
+    </a>
+    <button id="btnHelpScrollTop" style="border:1px solid var(--br2);background:transparent;color:var(--muted);padding:6px 10px;border-radius:999px;font-family:var(--mono);font-size:11px;cursor:pointer">Top</button>
+  </div>
+
+  <details open style="border:1px solid var(--br);border-radius:12px;background:rgba(255,255,255,.02);padding:10px 10px">
+    <summary style="cursor:pointer;font-family:var(--head);font-size:14px">How to run a clean study (60 seconds)</summary>
+    <div style="margin-top:10px;font-family:var(--body);font-size:13px;line-height:1.35;color:var(--txt)">
+      <ol style="margin:0 0 0 18px;padding:0;display:flex;flex-direction:column;gap:6px">
+        <li><b>Setup</b>: pick your process + operator, enter takt if you have it. Load video if available.</li>
+        <li><b>Record</b>: select a step, then use <b>Start</b> and <b>End</b>. Capture reality—don’t pause to fix names.</li>
+        <li><b>If it gets messy</b>: tag the row as <b>Rework</b>/<b>Wait</b>/<b>Walk</b> and keep going.</li>
+        <li><b>Review</b>: use <b>Edit</b> to reassign Cycle/Job/Step/Type without changing timestamps.</li>
+        <li><b>Yamazumi</b>: each cycle is one column; look for waste stacks and rework spikes.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details style="border:1px solid var(--br);border-radius:12px;background:rgba(255,255,255,.02);padding:10px 10px">
+    <summary style="cursor:pointer;font-family:var(--head);font-size:14px">Definitions (Lean lens)</summary>
+    <div style="margin-top:10px;font-family:var(--body);font-size:13px;line-height:1.35;color:var(--txt);display:flex;flex-direction:column;gap:8px">
+      <div><b>VA</b>: changes the product/service in a way the customer pays for, done right the first time.</div>
+      <div><b>NNVA</b>: needed today, but the customer wouldn’t pay for it (e.g., checks, paperwork).</div>
+      <div><b>Wait</b>: time with no progress (machine idle, searching for info, waiting on upstream).</div>
+      <div><b>Walk</b>: motion / travel not creating value.</div>
+      <div><b>Rework</b>: doing work again because of defects, missed steps, or backtracking.</div>
+      <div><b>Other Waste</b>: everything else that doesn’t move value forward.</div>
+    </div>
+  </details>
+
+  <details style="border:1px solid var(--br);border-radius:12px;background:rgba(255,255,255,.02);padding:10px 10px">
+    <summary style="cursor:pointer;font-family:var(--head);font-size:14px">Troubleshooting (fast fixes)</summary>
+    <div style="margin-top:10px;font-family:var(--body);font-size:13px;line-height:1.35;color:var(--txt)">
+      <ul style="margin:0 0 0 18px;padding:0;display:flex;flex-direction:column;gap:6px">
+        <li><b>Buttons not responding after an update</b>: hard refresh (iOS Safari: share → reload; or close tab, reopen). On desktop: Ctrl+F5 / Cmd+Shift+R.</li>
+        <li><b>Review disabled</b>: you need at least one captured step (Start+End) OR load a JSON file.</li>
+        <li><b>Yamazumi blank</b>: open Review, ensure rows have a <b>Cycle #</b>. If all rows share Cycle 1, you’ll see one bar.</li>
+      </ul>
+    </div>
+  </details>
+
+  <div style="height:6px"></div>
+
+    <div class="hcard">
+      <div class="ht">Operator backtracks to a prior step / prior cycle</div>
+      <div class="hb">Keep timing. Tag the step as <b>Rework</b> (or Wait/Walk). In <b>Review</b>, reassign the row to the correct cycle/job (timestamps stay intact).</div>
+    </div>
+    <div class="hcard">
+      <div class="ht">I hit the wrong step</div>
+      <div class="hb">Don’t delete in the moment. Finish the capture, then use <b>Edit</b> in Review to correct the step name, job, cycle, and work type.</div>
+    </div>
+    <div class="hcard">
+      <div class="ht">Operator stops mid-step</div>
+      <div class="hb">Capture what happened. If you need two pieces later, use <b>Split</b> (coming next) or add a note and adjust the assignment in Review.</div>
+    </div>
+    <div class="hcard">
+      <div class="ht">When do I start a new cycle?</div>
+      <div class="hb">Use the cycle tabs as the operator repeats the process. If reality breaks sequence, keep capturing and correct cycle mapping in Review.</div>
+    </div>
+    <div class="hcard">
+      <div class="ht">What should I classify as Value Add vs Waste?</div>
+      <div class="hb"><b>VA</b>: transforms the product. <b>NNVA</b>: required but non-transforming (setup, paperwork). <b>Walk/Wait/Rework</b>: waste signals instability.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ ROW EDITOR MODAL ══════ -->
+<div id="rvEdit" style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:99999;padding:14px">
+  <div style="width:min(520px,96vw);background:var(--s1);border:1px solid var(--br);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--br)">
+      <div style="font-family:var(--head);font-size:16px">Edit Step</div>
+      <button id="btnRvEditClose" style="background:none;border:1px solid var(--br2);color:var(--muted);border-radius:10px;padding:6px 10px;font-family:var(--mono);font-size:11px;cursor:pointer">Close</button>
+    </div>
+    <div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <div class="lbl">Cycle #</div>
+        <input id="edCycle" class="inp" type="number" min="1" step="1">
+      </div>
+      <div>
+        <div class="lbl">Job</div>
+        <input id="edJob" class="inp" placeholder="Job / part / work order">
+      </div>
+      <div style="grid-column:1 / -1">
+        <div class="lbl">Step</div>
+        <input id="edStep" class="inp" placeholder="Step name">
+      </div>
+      <div style="grid-column:1 / -1">
+        <div class="lbl">Work Type</div>
+        <select id="edType" class="inp">
+          <option value="va">Value Add</option>
+          <option value="nnva">NNVA (Required)</option>
+          <option value="walk">Walk</option>
+          <option value="wait">Wait</option>
+          <option value="rework">Rework</option>
+          <option value="waste">Other Waste</option>
+        </select>
+      </div>
+      <div style="grid-column:1 / -1">
+        <div class="lbl">Notes</div>
+        <input id="edNote" class="inp" placeholder="Optional note">
+      </div>
+      <div style="grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div><div class="lbl">Start</div><div class="ro" id="edStart">—</div></div>
+        <div><div class="lbl">End</div><div class="ro" id="edEnd">—</div></div>
+        <div><div class="lbl">Duration</div><div class="ro" id="edDur">—</div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;padding:12px 14px;border-top:1px solid var(--br)">
+      <button id="btnRvEditSave" class="cta" style="padding:10px 14px;border-radius:12px">Save</button>
+    </div>
+  </div>
+
+<!-- Jump Picker Modal (select step reference for To Step Start/End) -->
+<div id="jov" style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:99998;padding:14px">
+  <div style="width:min(520px,96vw);background:var(--s1);border:1px solid var(--br);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--br)">
+      <div style="font-family:var(--head);font-size:16px">Select a step to jump to</div>
+      <button id="btnJClose" style="background:none;border:1px solid var(--br);color:var(--txt);border-radius:10px;padding:6px 10px">Close</button>
+    </div>
+    <div style="padding:12px 14px">
+      <div class="lbl">Step</div>
+      <select id="jpick" class="inp"></select>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.3">
+        Tip: Use this when you're <b>not</b> actively timing a step. If you are timing, the buttons jump to the current step automatically.
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;padding:12px 14px;border-top:1px solid var(--br)">
+      <button id="btnJumpStart" class="ctab" type="button">⟲ Jump to Start</button>
+      <button id="btnJumpEnd" class="ctab" type="button">⟳ Jump to End</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════
+// Version Stamp
+// ═══════════════════════════════════════════════
+const APP_VERSION  = 'V2.1';
+const APP_REVISION = 'V2.1-FIXED'; // all 16 bugs addressed
+const BUILD_DATE   = '2026-02-28';
+
+
+// Cache-bust local guide link so GitHub Pages updates show immediately
+(function(){
+  try{
+    const a = document.getElementById('btnGuideLink');
+    if(a){
+      const base = 'TimeStuDY_ProcessFlowGuide.html';
+      a.href = `${base}?v=${encodeURIComponent(APP_REVISION)}&d=${encodeURIComponent(BUILD_DATE)}`;
+    }
+    // Any guide links inside Help
+    document.querySelectorAll('a[href^="TimeStuDY_ProcessFlowGuide.html"]').forEach(x=>{
+      x.href = `TimeStuDY_ProcessFlowGuide.html?v=${encodeURIComponent(APP_REVISION)}&d=${encodeURIComponent(BUILD_DATE)}`;
+    });
+  }catch(e){}
+})();
+
+
+// ═══════════════════════════════════════════════
+// BUG-001 FIX: toast() defined globally, called everywhere
+// ═══════════════════════════════════════════════
+function toast(msg, dur=2800){
+  const el = document.getElementById('toastEl');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'), dur);
+}
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+const APP={
+  type:'3c', vidReady:false, running:false, frozen:false, editIdx:null,
+  stepStartVT:null, cycleStartVT:null,
+  cycles:[[]], cur:0, pending:null,
+  raf:null, tStart:null, tAccum:0,
+  meta:{},
+  selMode:false,
+  selSet:new Set()
+  // BUG-015 FIX: removed unused APP.templates
+};
+
+const $  = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const p2  = n => String(n).padStart(2,'0');
+const fmtMs = ms => { const s=ms/1000, m=Math.floor(s/60); return `${p2(m)}:${(s%60).toFixed(1).padStart(4,'0')}`; };
+const fmtS  = s  => `${(+s||0).toFixed(2)}s`;
+const mmss  = s  => { const m=Math.floor(s/60), sc=Math.floor(s%60); return `${p2(m)}:${p2(sc)}`; };
+const elapsed = () => { let ms=APP.tAccum; if(APP.tStart!==null) ms+=performance.now()-APP.tStart; return ms; };
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+const show = id => document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('off',s.id!==id));
+$('btnW').onclick      = () => show('ST');
+$('btnSkip').onclick   = () => { collectMeta(); show('A'); applyType(); };
+$('btnStBack').onclick = () => show('W');
+$('btnGo').onclick     = () => { collectMeta(); show('A'); applyType(); };
+$('fDate').value       = new Date().toLocaleDateString('en-US');
+
+// REVIEW + SETUP NAV FIX (wired handlers; prevents regressions when merges drop bindings)
+try{
+  const br = $('btnReview');
+  if(br) br.onclick = () => { try{ openRv(); }catch(e){ try{ show('RV'); renderReview(); }catch(_e){} } };
+}catch(e){}
+
+try{ const b = $('btnRVBack'); if(b) b.onclick = () => { try{ closeRv(); }catch(e){ try{ show('A'); }catch(_e){} } }; }catch(e){}
+try{ const b = $('btnRVRefresh'); if(b) b.onclick = () => { try{ renderReview(); }catch(e){} }; }catch(e){}
+try{ const b = $('btnYamPng'); if(b) b.onclick = () => { try{ downloadYamPng(); }catch(e){} }; }catch(e){}
+try{ const b = $('btnYamCsv'); if(b) b.onclick = () => { try{ downloadYamCsv(); }catch(e){} }; }catch(e){}
+
+// Return to Setup from A screen
+try{
+  const b = $('btnABack');
+  if(b){
+    const goSetup = (ev)=>{
+      try{ ev && ev.preventDefault && ev.preventDefault(); }catch(e){}
+      try{ const v=$('vid'); if(v && !v.paused) v.pause(); }catch(e){}
+      try{ // close any overlays/modal that might block taps
+        const ov=$('ov'); if(ov) ov.classList.remove('open');
+        const hp=$('helpPanel'); if(hp){ hp.classList.remove('open'); hp.style.display='none'; hp.style.visibility='hidden'; hp.style.pointerEvents='none'; }
+      }catch(e){}
+      try{ show('ST'); }catch(e){ try{ show('W'); }catch(_e){} }
+    };
+    b.onclick = goSetup;
+    b.addEventListener('touchstart', goSetup, {passive:false});
+  }
+
+// Navigation hardening: any element with [data-nav="setup"] or .nav-setup will always return to Setup.
+(function(){
+  const goSetup = (ev)=>{
+    try{ ev && ev.preventDefault && ev.preventDefault(); }catch(e){}
+    try{ const v=document.getElementById('vid'); if(v && !v.paused) v.pause(); }catch(e){}
+    try{
+      const ov=document.getElementById('ov'); if(ov) ov.classList.remove('open');
+      const hp=document.getElementById('helpPanel'); if(hp){ hp.classList.remove('open'); hp.style.display='none'; hp.style.visibility='hidden'; hp.style.pointerEvents='none'; hp.style.transform='translateX(100%)'; hp.setAttribute('aria-hidden','true'); }
+    }catch(e){}
+    try{ show('ST'); }catch(e){ try{ show('W'); }catch(_e){} }
+  };
+
+  const matchSetup = (t)=>{
+    if(!t) return null;
+    return t.closest ? (t.closest('[data-nav="setup"],.nav-setup,#btnABack,#btnSetup,#btnReturnSetup') || null) : null;
+  };
+
+  const onAny = (ev)=>{
+    const hit = matchSetup(ev.target);
+    if(hit){ goSetup(ev); }
+  };
+
+  document.addEventListener('click', onAny, true);
+  document.addEventListener('touchstart', onAny, {passive:false, capture:true});
+})();
+
+}catch(e){}
+
+
+// ═══════════════════════════════════════════════
+// REVIEW + FAQ
+// ═══════════════════════════════════════════════
+const WORK_TYPES = [
+  {k:'va',    label:'Value Add',        dot:'var(--grn)'},
+  {k:'nnva',  label:'NNVA (Required)',  dot:'var(--gold)'},
+  {k:'walk',  label:'Walk',             dot:'var(--blu)'},
+  {k:'wait',  label:'Wait',             dot:'rgba(255,255,255,.55)'},
+  {k:'rework',label:'Rework',           dot:'var(--red)'},
+  {k:'waste', label:'Other Waste',      dot:'rgba(231,76,60,.65)'}
+];
+
+
+function normalizeWorkType(v){
+  if(!v) return '';
+  const s = String(v).toLowerCase().trim();
+  // common synonyms / legacy keys
+  if(s==='va' || s==='value' || s==='valueadd' || s==='value add' || s==='value_add' || s==='vcw' || s==='value creating' || s==='value-creating') return 'va';
+  if(s==='nnva' || s==='req' || s==='required' || s==='n-nva' || s==='non value add required') return 'nnva';
+  if(s==='incidental' || s==='inc') return 'nnva'; // treat incidental as required NNVA for yamazumi
+  if(s==='walk' || s==='travel' || s==='motion') return 'walk';
+  if(s==='wait' || s==='waiting' || s==='delay') return 'wait';
+  if(s==='rework' || s==='redo') return 'rework';
+  if(s==='waste' || s==='nva' || s==='other' || s==='other waste') return 'waste';
+  return s;
+}
+
+
+function ensureStepDefaults(s){
+  if(!s) return s;
+
+  // Normalize / infer a single, mutually-exclusive workType.
+  // Priority: explicit workType -> inferred from flags -> default VA.
+  const inferred = (!s.workType) ? (
+    s.walk ? 'walk' :
+    s.wait ? 'wait' :
+    s.rework ? 'rework' :
+    s.vcw ? 'va' :
+    s.incidental ? 'nnva' :
+    s.waste ? 'waste' :
+    ''
+  ) : '';
+
+  const wt = normalizeWorkType(s.workType || inferred) || 'va';
+  s.workType = wt;
+
+  // Enforce exclusivity: clear all flags then set only the one that matches workType.
+  s.vcw = s.incidental = s.waste = s.walk = s.wait = s.rework = false;
+  if(wt==='va') s.vcw = true;
+  else if(wt==='nnva') s.incidental = true;
+  else if(wt==='waste') s.waste = true;
+  else if(wt==='walk') s.walk = true;
+  else if(wt==='wait') s.wait = true;
+  else if(wt==='rework') s.rework = true;
+
+  if(!('job' in s) || !s.job) s.job = (APP.meta && (APP.meta.part||APP.meta.process)) || '';
+  if(!('note' in s)) s.note = s.note || '';
+  return s;
+}
+
+
+
+function openJumpPicker(){
+  const jov = $('jov'); const sel = $('jpick');
+  if(!jov || !sel) return;
+  // build options from all steps (sorted by start time)
+  const rows = allRowsFlat().slice().sort((a,b)=>(a.s.stepStart??0)-(b.s.stepStart??0));
+  sel.innerHTML = '';
+  jov.style.display='flex';
+  rows.forEach(r=>{
+    const cnum = r.c+1;
+    const nm = r.s.name || '(unnamed step)';
+    const st = (r.s.stepStart!=null)?fmtS(r.s.stepStart):'—';
+    const opt = document.createElement('option');
+    opt.value = JSON.stringify({c:r.c,i:r.i});
+    opt.textContent = `C${cnum} • ${st} • ${nm}`;
+    sel.appendChild(opt);
+  });
+  if(!sel.options.length){
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'No steps available yet';
+    sel.appendChild(opt);
+  }
+  jov.style.display='flex';
+  // iOS: prevent background scroll
+  document.body.style.overflow='hidden';
+}
+function closeJumpPicker(){
+  const jov = $('jov');
+  if(jov) jov.style.display='none';
+  document.body.style.overflow='auto';
+}
+function getPickedStep(){
+  const sel = $('jpick');
+  if(!sel || !sel.value) return null;
+  try{
+    const {c,i} = JSON.parse(sel.value);
+    const s = APP.cycles?.[c]?.[i];
+    return s ? ensureStepDefaults(s) : null;
+  }catch(e){ return null; }
+}
+
+function allRowsFlat(){
+  const out=[];
+  APP.cycles.forEach((cyc,c)=>{
+    (cyc||[]).forEach((s,i)=>{
+      ensureStepDefaults(s);
+      out.push({c,i,s});
+    });
+  });
+  return out;
+}
+
+function wtMeta(k){ const nk = normalizeWorkType(k) || 'va'; return WORK_TYPES.find(x=>x.k===nk) || WORK_TYPES[0]; }
+
+function renderReview(){
+  const tb = $('rvTbody');
+  if(!tb) return;
+  tb.innerHTML='';
+  const rows = allRowsFlat();
+  $('rvInfo').textContent = rows.length ? `${rows.length} rows · ${APP.cycles.length} cycles` : '0 rows';
+  rows.forEach((r,idx)=>{
+    const tr=document.createElement('tr');
+    const wt=wtMeta(r.s.workType);
+    tr.innerHTML = `
+      <td>${idx+1}</td>
+      <td>Cycle ${r.c+1}</td>
+      <td>${esc(r.s.job||'')}</td>
+      <td>${esc(r.s.name||'')}</td>
+      <td><span class="rvTag"><span class="rvDot" style="background:${wt.dot}"></span>${wt.label}</span></td>
+      <td>${isFinite(r.s.stepStart)?fmtS(r.s.stepStart):'—'}</td>
+      <td>${isFinite(r.s.stepEnd)?fmtS(r.s.stepEnd):'—'}</td>
+      <td>${isFinite(r.s.duration)?fmtS(r.s.duration):'—'}</td>
+      <td>
+        <div class="rvAct">
+          <button class="rvBtn" data-act="edit" data-c="${r.c}" data-i="${r.i}">Edit</button>
+        </div>
+      </td>`;
+    tb.appendChild(tr);
+  });
+  drawYamazumi();
+  // redraw once visible (fix zero-width canvas on first open)
+  setTimeout(drawYamazumi, 60);
+}
+
+function openRv(){
+  // enable review even if currently in A
+  show('RV');
+  renderReview();
+}
+
+function closeRv(){
+  show('A');
+}
+
+let RV_EDIT = null;
+
+function openEdit(c,i){
+  const s = APP.cycles?.[c]?.[i];
+  if(!s) return;
+  ensureStepDefaults(s);
+  RV_EDIT = {c,i};
+  $('edCycle').value = String(c+1);
+  $('edJob').value   = s.job || '';
+  $('edStep').value  = s.name || '';
+  $('edType').value  = normalizeWorkType(s.workType) || 'va';
+  $('edNote').value  = s.note || '';
+  $('edStart').textContent = isFinite(s.stepStart)?fmtS(s.stepStart):'—';
+  $('edEnd').textContent   = isFinite(s.stepEnd)?fmtS(s.stepEnd):'—';
+  $('edDur').textContent   = isFinite(s.duration)?fmtS(s.duration):'—';
+  $('rvEdit').style.display='flex';
+}
+
+function closeEdit(){
+  $('rvEdit').style.display='none';
+  RV_EDIT=null;
+}
+
+function saveEdit(){
+  if(!RV_EDIT) return;
+  const {c,i} = RV_EDIT;
+  const s = APP.cycles?.[c]?.[i];
+  if(!s) return closeEdit();
+  const newCyc = Math.max(1, parseInt($('edCycle').value||String(c+1),10)) - 1;
+  const newJob = $('edJob').value.trim();
+  const newName= $('edStep').value.trim();
+  const newType= $('edType').value;
+  const newNote= $('edNote').value.trim();
+  s.job = newJob;
+  if(newName) s.name = newName;
+  s.workType = normalizeWorkType(newType) || 'va';
+  // enforce mutually-exclusive flags
+  s.vcw = s.incidental = s.waste = s.walk = s.wait = s.rework = false;
+  if(s.workType==='va') s.vcw=true;
+  else if(s.workType==='nnva') s.incidental=true;
+  else if(s.workType==='waste') s.waste=true;
+  else if(s.workType==='walk') s.walk=true;
+  else if(s.workType==='wait') s.wait=true;
+  else if(s.workType==='rework') s.rework=true;
+  s.note = newNote;
+  // If cycle changed, move step (preserve timestamps)
+  if(newCyc !== c){
+    while(APP.cycles.length <= newCyc) APP.cycles.push([]);
+    const moved = APP.cycles[c].splice(i,1)[0];
+    APP.cycles[newCyc].push(moved);
+    // keep ordering stable by start time
+    APP.cycles[newCyc].sort((a,b)=>(a.stepStart??0)-(b.stepStart??0));
+  }
+  closeEdit();
+  renderSteps(); // keep main view synced
+  buildPriorOptions?.();
+  syncX?.();
+  renderReview();
+  toast('Saved');
+}
+
+// Yamazumi chart (stacked bars by cycle)
+function yamData(){
+  const cats = WORK_TYPES.map(w=>w.k);
+  const perCycle = APP.cycles.map(cyc=>{
+    const sums = Object.fromEntries(cats.map(k=>[k,0]));
+    (cyc||[]).forEach(s=>{
+      ensureStepDefaults(s);
+      const k0 = normalizeWorkType(s.workType) || 'va'; const k = cats.includes(k0)?k0:'va';
+      sums[k] += (Number(s.duration)||0);
+    });
+    return sums;
+  });
+  return {cats, perCycle};
+}
+
+function drawYamazumi(){
+  const cv = $('yamCanvas');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = cv.getBoundingClientRect();
+  const cssW = rect.width || cv.clientWidth || 600;
+  const cssH = rect.height || 260;
+  cv.width  = Math.floor(cssW * dpr);
+  cv.height = Math.floor(cssH * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cssW,cssH);
+
+  const {cats, perCycle} = yamData();
+  const n = perCycle.length;
+  const padL=48, padR=14, padT=14, padB=34;
+  const w = cssW - padL - padR;
+  const h = cssH - padT - padB;
+  const totals = perCycle.map(s=>cats.reduce((a,k)=>a+s[k],0));
+  const maxT = Math.max(1, ...totals);
+  // grid
+  ctx.strokeStyle = 'rgba(255,255,255,.06)';
+  ctx.lineWidth = 1;
+  const gridN = 4;
+  for(let g=0; g<=gridN; g++){
+    const y = padT + h - (h * g / gridN);
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+w,y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.font = '10px ' + getComputedStyle(document.documentElement).getPropertyValue('--mono').replace(/['"]/g,'').trim();
+    const v = (maxT * g / gridN);
+    ctx.fillText((v>=60? (v/60).toFixed(1)+'m' : v.toFixed(0)+'s'), 6, y+3);
+  }
+  if(!n){
+    ctx.fillStyle='rgba(255,255,255,.45)';
+    ctx.font='12px ' + getComputedStyle(document.documentElement).getPropertyValue('--body').replace(/['"]/g,'').trim();
+    ctx.fillText('No data yet — capture at least 1 step.', padL, padT+20);
+    $('yamLegend').innerHTML='';
+    return;
+  }
+  const barW = Math.max(22, Math.min(56, w / (n*1.35)));
+  const gap  = (w - barW*n) / (n+1);
+  // bars
+  for(let i=0;i<n;i++){
+    let x = padL + gap*(i+1) + barW*i;
+    let yBase = padT + h;
+    cats.forEach(k=>{
+      const v = perCycle[i][k] || 0;
+      if(v<=0) return;
+      const segH = (v / maxT) * h;
+      yBase -= segH;
+      const meta = wtMeta(k);
+      // colors using CSS variables resolved roughly
+      let fill = meta.dot;
+      // crude resolve for var(...)
+      if(fill.startsWith('var(')){
+        const varName = fill.slice(4,-1);
+        fill = getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || '#999';
+      }
+      ctx.fillStyle = fill;
+      ctx.fillRect(x, yBase, barW, segH);
+    });
+    // label
+    ctx.fillStyle='rgba(255,255,255,.55)';
+    ctx.font='10px ' + getComputedStyle(document.documentElement).getPropertyValue('--mono').replace(/['"]/g,'').trim();
+    const label = String(i+1);
+    const tx = x + barW/2 - ctx.measureText(label).width/2;
+    ctx.fillText(label, tx, padT+h+18);
+  }
+
+  // legend
+  const leg = $('yamLegend');
+  leg.innerHTML = WORK_TYPES.map(w=>{
+    return `<span class="rvTag"><span class="rvDot" style="background:${w.dot}"></span>${w.label}</span>`;
+  }).join('');
+}
+
+function downloadYamPng(){
+  const cv = $('yamCanvas'); if(!cv) return;
+  const a = document.createElement('a');
+  const stamp = (APP.meta?.date||'').replace(/\//g,'-') || 'study';
+  a.download = `yamazumi_${stamp}.png`;
+  a.href = cv.toDataURL('image/png');
+  a.click();
+}
+
+function downloadYamCsv(){
+  const {cats, perCycle} = yamData();
+  const header = ['Cycle', ...cats.map(k=>wtMeta(k).label)];
+  const lines=[header.join(',')];
+  perCycle.forEach((s,idx)=>{
+    const row=[`Cycle ${idx+1}`, ...cats.map(k=>(s[k]||0))];
+    lines.push(row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  });
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  const stamp = (APP.meta?.date||'').replace(/\//g,'-') || 'study';
+  a.download = `yamazumi_${stamp}.csv`;
+  a.href = URL.createObjectURL(blob);
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+
+// Help panel
+function toggleHelp(open){
+  const p = $('helpPanel');
+  if(!p) return;
+
+  // If caller didn't specify, toggle current state
+  const currentlyOpen = p.classList.contains('open');
+  const isOpen = (open === undefined) ? !currentlyOpen : !!open;
+
+  p.classList.toggle('open', isOpen);
+
+  // Reliability on iOS: when "closed" ensure it can't steal taps (even if a translated sliver overlaps).
+  if(isOpen){
+    p.style.display = 'block';
+    p.style.pointerEvents = 'auto';
+    p.style.visibility = 'visible';
+    p.style.transform = 'translateX(0)';
+  }else{
+    p.style.transform = 'translateX(100%)';
+    p.style.pointerEvents = 'none';
+    p.style.visibility = 'hidden';
+    // Let the transition finish, then fully remove from layout hit-testing.
+    setTimeout(()=>{ if(!p.classList.contains('open')) p.style.display='none'; }, 260);
+  }
+
+  p.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+}
+
+// Extra: make the ? button responsive on iOS (touch + click) even if an overlay steals focus.
+(function bindHelpHotkeys(){
+  const hp = $('btnHelp');
+  const hc = $('btnHelpClose');
+  if(hp){
+    hp.addEventListener('touchstart', (e)=>{ e.preventDefault(); toggleHelp(true); }, {passive:false});
+    hp.addEventListener('click', (e)=>{ e.preventDefault(); toggleHelp(true); });
+  }
+  if(hc){
+    hc.addEventListener('touchstart', (e)=>{ e.preventDefault(); toggleHelp(false); }, {passive:false});
+    hc.addEventListener('click', (e)=>{ e.preventDefault(); toggleHelp(false); });
+  }
+
+// Help: scroll to top
+(function(){
+  try{
+    const b = document.getElementById('btnHelpScrollTop');
+    if(!b) return;
+    const body = document.getElementById('helpBody') || document.querySelector('#helpPanel [style*="overflow:auto"]');
+    const goTop = (e)=>{ try{ e&&e.preventDefault&&e.preventDefault(); }catch(_e){} try{ if(body) body.scrollTop = 0; }catch(_e){} };
+    b.addEventListener('touchstart', goTop, {passive:false});
+    b.addEventListener('click', goTop);
+  }catch(e){}
+})();
+
+})();
+document.querySelectorAll('.tbtn').forEach(b=>{
+  b.onclick = () => {
+    document.querySelectorAll('.tbtn').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel'); APP.type = b.dataset.t;
+    $('jbFields').style.display = APP.type==='jb' ? 'block' : 'none';
+    $('tiFields').style.display = APP.type==='jb' ? 'none'  : 'block';
+  };
+});
+document.querySelectorAll('#ppeChips .chip').forEach(c => c.onclick=()=>c.classList.toggle('on'));
+
+function collectMeta(){
+  APP.meta = {
+    process:    $('fProc').value.trim(),
+    operator:   $('fOp').value.trim(),
+    dept:       $('fDept').value.trim(),
+    analyst:    $('fAna').value.trim(),
+    leader:     $('fLead').value.trim(),
+    supervisor: $('fSup').value.trim(),
+    part:       $('fPart').value.trim(),
+    date:       $('fDate').value.trim() || new Date().toLocaleDateString('en-US'),
+    takt:       $('fTakt').value.trim(),
+    cycle:      $('fCyc').value.trim(),
+    qty:        $('fQty').value.trim(),
+    // BUG-014 FIX: stdwip now collected from setup form
+    stdwip:     $('fStdWip')?.value.trim() || '',
+    tools:      $('fTools')?.value.trim() || '',
+    ppe:        [...$('ppeChips').querySelectorAll('.chip.on')].map(c=>c.dataset.p),
+  };
+}
+
+function applyType(){
+  const labels = { '3c':'3C WORK OBSERVATION', 'ji':'JOB INSTRUCTION SHEET', 'jb':'JOB BREAKDOWN SHEET' };
+  const snl    = { '3c':'Work Step *', 'ji':'Step Description *', 'jb':'Step Label (optional)' };
+  $('aTypeLbl').textContent = labels[APP.type];
+  $('snLbl').textContent    = snl[APP.type];
+  $('f3c').style.display    = APP.type==='3c' ? 'block' : 'none';
+  $('fJI').style.display    = APP.type==='ji' ? 'block' : 'none';
+  $('fJB').style.display    = APP.type==='jb' ? 'block' : 'none';
+  $('jbBar').style.display  = APP.type==='jb' ? 'flex'  : 'none';
+  if(APP.type !== 'jb'){ APP.selMode=false; APP.selSet.clear(); updateSelUI(); }
+}
+
+// ═══════════════════════════════════════════════
+// VIDEO
+// ═══════════════════════════════════════════════
+const vid = $('vid');
+$('btnPick').onclick = () => $('fIn').click();
+$('fIn').addEventListener('change', e => { const f=e.target.files[0]; e.target.value=''; if(f) loadVid(f); });
+
+function loadVid(file){
+  if(vid._url){ URL.revokeObjectURL(vid._url); vid._url=null; }
+  vid.pause(); vid.removeAttribute('src'); vid.load();
+  APP.meta.videoName         = file?.name || '';
+  APP.meta.videoSize         = file?.size || 0;
+  APP.meta.videoLastModified = file?.lastModified || 0;
+  const url = URL.createObjectURL(file);
+  vid._url = url;
+  vid.onloadedmetadata = () => {
+    $('vEmpty').style.display = 'none';
+    vid.style.display = 'block';
+    APP.vidReady = true;
+    $('btnStart').disabled = false;
+    vid.onloadedmetadata = null;
+  };
+  vid.onerror = () => alert('Cannot load video.\nTip: MP4 (H.264) works best on iPhone.');
+  vid.src = url;
+  vid.load();
+}
+
+function clearVideoSource(){
+  try{ vid.pause(); }catch(e){}
+  try{ vid.currentTime = 0; }catch(e){}
+  // BUG-009 FIX: always revoke blob url when clearing
+  if(vid._url){ try{ URL.revokeObjectURL(vid._url); }catch(e){} vid._url=null; }
+  vid.onerror = null;
+  vid.removeAttribute('src');
+  vid.load();
+  APP.vidReady = false;
+  $('vEmpty').style.display = 'flex';
+  vid.style.display = 'none';
+  $('pFill').style.width = '0%';
+  // BUG-003 FIX: all btnStart state set here, after vidReady=false, single source of truth
+  $('btnStart').disabled = true;
+  $('btnStep').disabled  = true;
+  $('btnEnd').disabled   = true;
+  $('btnStart').textContent = '▶ Start';
+}
+
+vid.addEventListener('timeupdate', () => {
+  if(vid.duration) $('pFill').style.width = (vid.currentTime / vid.duration * 100) + '%';
+});
+
+// ═══════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════
+function timerGo(){
+  APP.tStart = performance.now();
+  const tick = () => { $('timerEl').textContent = fmtMs(elapsed()); APP.raf = requestAnimationFrame(tick); };
+  APP.raf = requestAnimationFrame(tick);
+}
+function timerPause(){
+  cancelAnimationFrame(APP.raf); APP.raf = null;
+  if(APP.tStart !== null){ APP.tAccum += performance.now()-APP.tStart; APP.tStart = null; }
+}
+function timerReset(){
+  cancelAnimationFrame(APP.raf); APP.raf = null;
+  APP.tAccum = 0; APP.tStart = null;
+  $('timerEl').textContent = '00:00.0';
+}
+
+// ═══════════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════════
+$('btnStart').onclick   = doStart;
+$('btnStep').onclick    = doStepEnd;
+$('btnEnd').onclick     = doEndCycle;
+$('btnSave').onclick    = doSave;
+$('btnDis').onclick     = doDiscard;
+$('btnNewStudy').onclick = resetStudy;
+$('btnSelMode').onclick  = toggleSelMode;
+$('btnClearSel').onclick = clearSelection;
+$('btnGroupSel').onclick = groupSelection;
+$('priorSel').onchange   = applyPrior;
+
+$('btnJStart').onclick  = () => { if(!APP.pending)return; vid.pause(); vid.currentTime=APP.pending.stepStart; };
+$('btnJEnd').onclick    = () => { if(!APP.pending)return; vid.pause(); vid.currentTime=APP.pending.stepEnd; };
+$('btnRw2').onclick     = () => { if(!APP.pending)return; vid.pause(); const t=Math.max(APP.pending.stepStart,(vid.currentTime||0)-2); vid.currentTime=t; };
+$('btnPlayPrev').onclick = () => { if(!APP.pending)return; if(vid.paused){ vid.play().catch(console.warn); }else{ vid.pause(); } };
+$('btnSetEnd').onclick   = () => {
+  if(!APP.pending)return;
+  const newEnd = Math.max(APP.pending.stepStart, Math.min(vid.currentTime, (isFinite(vid.duration)&&vid.duration>0)?vid.duration:vid.currentTime));
+  APP.pending.stepEnd = newEnd;
+  APP.pending.duration = Math.max(0, newEnd-APP.pending.stepStart);
+  $('tEn').textContent = fmtS(newEnd);
+  $('tDu').textContent = fmtS(APP.pending.duration);
+  vid.pause();
+};
+$('btnEndM').onclick = () => nudgePendingEnd(-0.5);
+$('btnEndP').onclick = () => nudgePendingEnd(+0.5);
+
+// Quick controls
+function seekTo(t){
+  try{
+    const target = Math.max(0, Number(t||0));
+    if(vid.readyState >= 1){ vid.pause(); vid.currentTime=target; return; }
+    const once = () => { try{ vid.pause(); vid.currentTime=target; }catch(e){} vid.removeEventListener('loadedmetadata',once); };
+    vid.addEventListener('loadedmetadata', once, {once:true});
+  }catch(e){}
+}
+function syncPauseLabel(){
+  const b = $('btnPauseMain'); if(!b) return;
+  b.textContent = (vid && !vid.paused) ? '⏸ Pause' : '▶ Play';
+}
+if($('btnPauseMain')){
+  $('btnPauseMain').onclick = () => {
+    try{ if(!vid)return; if(vid.paused) vid.play().catch(()=>{}); else vid.pause(); setTimeout(syncPauseLabel,50); }catch(e){}
+  };
+}
+$('btnRw2Main').onclick    = () => { try{ seekTo((vid.currentTime||0)-2); syncPauseLabel(); }catch(e){} };
+$('btnJStartMain').onclick = () => {
+  // If actively timing, jump to current pending step start. Otherwise prompt for a step.
+  if(APP.pending){ seekTo(APP.pending.stepStart); syncPauseLabel(); return; }
+  openJumpPicker();
+  APP._jumpMode = 'start';
+};
+if($('btnJEndMain')){
+  $('btnJEndMain').onclick = () => {
+  if(APP.pending){
+    const t = (APP.pending.stepEnd!=null) ? APP.pending.stepEnd : (vid.currentTime||0);
+    seekTo(t); syncPauseLabel(); return;
+  }
+  openJumpPicker();
+  APP._jumpMode = 'end';
+};
+}
+$('btnSetEndMain').onclick = () => {
+  if(!APP.pending)return;
+
+if($('btnJClose')){ $('btnJClose').onclick = closeJumpPicker; $('btnJClose').ontouchstart = (e)=>{e.preventDefault(); closeJumpPicker();}; }
+if($('btnJumpStart')){ $('btnJumpStart').onclick = ()=>{ const s=getPickedStep(); if(!s){toast('No step selected'); return;} seekTo(s.stepStart??0); syncPauseLabel(); closeJumpPicker(); }; }
+if($('btnJumpEnd')){ $('btnJumpEnd').onclick = ()=>{ const s=getPickedStep(); if(!s){toast('No step selected'); return;} const t=(s.stepEnd!=null)?s.stepEnd:(s.stepStart??0); seekTo(t); syncPauseLabel(); closeJumpPicker(); }; }
+
+
+  try{
+    const cur = (vid.readyState>=1) ? vid.currentTime : (APP.pending.stepEnd ?? APP.pending.stepStart);
+    const newEnd = Math.max(APP.pending.stepStart, Math.min(cur,(isFinite(vid.duration)&&vid.duration>0)?vid.duration:cur));
+    APP.pending.stepEnd    = newEnd;
+    APP.pending.duration   = Math.max(0, newEnd-APP.pending.stepStart);
+    $('tEn').textContent   = fmtS(newEnd);
+    $('tDu').textContent   = fmtS(APP.pending.duration);
+    try{ vid.pause(); }catch(e){}
+    syncPauseLabel();
+  }catch(e){}
+};
+vid.addEventListener('play',  syncPauseLabel);
+vid.addEventListener('pause', syncPauseLabel);
+
+function nudgePendingEnd(delta){
+  if(!APP.pending)return;
+  const max = (isFinite(vid.duration)&&vid.duration>0) ? vid.duration : APP.pending.stepEnd+60;
+  const newEnd = Math.max(APP.pending.stepStart, Math.min(max, APP.pending.stepEnd+delta));
+  APP.pending.stepEnd    = newEnd;
+  APP.pending.duration   = Math.max(0, newEnd-APP.pending.stepStart);
+  $('tEn').textContent   = fmtS(newEnd);
+  $('tDu').textContent   = fmtS(APP.pending.duration);
+  vid.pause();
+  vid.currentTime = newEnd;
+}
+
+function doStart(){
+  if(APP.running)return;
+  if(APP.cycleStartVT === null) APP.cycleStartVT = vid.currentTime;
+  APP.stepStartVT = vid.currentTime;
+  vid.play().catch(console.warn);
+  timerGo(); APP.running=true;
+  $('btnStart').textContent = '▶ Running';
+  $('btnStart').disabled = true;
+  $('btnStep').disabled  = false;
+  $('btnEnd').disabled   = false;
+  dot('live');
+}
+
+function doStepEnd(){
+  if(!APP.running || APP.frozen) return;
+  vid.pause(); timerPause(); APP.running=false; APP.frozen=true;
+  const endVT = vid.currentTime;
+  // BUG-005 FIX: guard against null stepStartVT
+  const startVT = APP.stepStartVT ?? 0;
+  const dur  = Math.max(0, endVT - startVT);
+  const el   = elapsed() / 1000;
+  APP.pending = { stepStart:startVT, stepEnd:endVT, duration:dur, elapsed:el };
+  $('tSt').textContent = fmtS(startVT);
+  $('tEn').textContent = fmtS(endVT);
+  $('tDu').textContent = fmtS(dur);
+  $('tEl').textContent = fmtS(el);
+  clearSheet();
+  $('ov').classList.add('open');
+  _openOv(true);
+  dot('hold');
+  setTimeout(() => $('sName').focus(), 300);
+}
+
+function clearSheet(){
+  $('priorSel').value = '';
+  $('sName').value = ''; $('sName').classList.remove('err');
+  ['cNote3c','jiSamp','jiCrit','jiNote','jiTools','jbWhat','jbSafe'].forEach(id=>{ const e=$(id); if(e) e.value=''; });
+  ['jbHow','jbWhy'].forEach(id=>{ const e=$(id); if(e) e.value=''; });
+  // BUG-013 FIX: reset ERACS select (not free text)
+  const er = $('cEracs'); if(er) er.value = '';
+  document.querySelectorAll('.cc').forEach(c=>{
+    c.classList.remove('on');
+    const cd = c.querySelector('.cd'); if(cd) cd.textContent='';
+  });
+}
+
+// BUG-002 FIX: doSave returns a boolean. false = validation failed, frozen stays true.
+function doSave(){
+  const raw  = $('sName').value.trim();
+  const n    = APP.cycles[APP.cur].length + 1;
+  const name = raw || (APP.type==='jb' ? `Step ${n}` : '');
+  if(!name){ $('sName').classList.add('err'); $('sName').focus(); return false; }
+  $('sName').classList.remove('err');
+
+  const step = { ...APP.pending, name };
+  if(APP.type==='3c'){
+    // Enforce mutually-exclusive work content: clear all work content flags then set selected
+    step.vcw = step.incidental = step.waste = step.walk = step.wait = step.rework = false;
+    document.querySelectorAll('.cc.on').forEach(c => step[c.dataset.k]=true);
+
+    step.eracs = $('cEracs').value.trim().toUpperCase();
+    step.note  = $('cNote3c').value.trim();
+  } else if(APP.type==='ji'){
+    step.sampling = $('jiSamp').value.trim();
+    step.criteria = $('jiCrit').value.trim();
+    step.note     = $('jiNote').value.trim();
+    step.tools    = $('jiTools').value.trim();
+  } else {
+    step.what   = $('jbWhat').value.trim();
+    step.how    = $('jbHow').value.trim();
+    step.why    = $('jbWhy').value.trim();
+    step.safety = $('jbSafe').value.trim();
+  }
+
+  // BUG-002 FIX: clear frozen BEFORE branching so both paths are consistent
+  APP.frozen = false;
+
+  if(APP.editIdx != null){
+    const existing = APP.cycles[APP.cur][APP.editIdx];
+    const merged = { ...existing, ...step, name:step.name };
+    ensureStepDefaults(merged);
+    APP.cycles[APP.cur][APP.editIdx] = merged;
+    APP.editIdx = null; APP.pending = null;
+    $('ov').classList.remove('open');
+    $('bHead').textContent = 'Step Captured';
+    dot('');
+    renderSteps();
+    // BUG-011 FIX: rebuild prior options after edit save
+    buildPriorOptions();
+    syncX();
+  try{ const br=$('btnReview'); if(br) br.disabled = !allRowsFlat().length; }catch(e){}
+  } else {
+    ensureStepDefaults(step);
+  APP.cycles[APP.cur].push(step);
+    APP.stepStartVT = APP.pending.stepEnd;
+    APP.pending = null;
+    $('ov').classList.remove('open');
+    $('btnStart').textContent = '▶ Resume';
+    $('btnStart').disabled = false;
+    $('btnStep').disabled  = true;
+    dot('');
+    renderSteps();
+  }
+  return true;
+}
+
+function doDiscard(){
+  $('ov').classList.remove('open');
+  APP.frozen = false; APP.pending = null;
+  if(APP.editIdx != null){ APP.editIdx=null; $('bHead').textContent='Step Captured'; }
+  $('btnStart').textContent = '▶ Resume';
+  $('btnStart').disabled = false;
+  $('btnStep').disabled  = true;
+  dot('');
+}
+
+function openEditStep(i){
+  const step = APP.cycles[APP.cur][i];
+  APP.editIdx = i;
+  $('sName').value = step.name || '';
+  applyType();
+  if(APP.type==='3c'){
+    document.querySelectorAll('.cc').forEach(c=>{ c.classList.remove('on'); c.querySelector('.cd').textContent=''; });
+    ['vcw','incidental','walk','wait','rework','waste','unsafe','difficult','cyclical','periodic','abnormal'].forEach(k=>{
+      if(step[k]){ const btn=document.querySelector(`.cc[data-k="${k}"]`); if(btn){ btn.classList.add('on'); btn.querySelector('.cd').textContent='✓'; } }
+    });
+    $('cEracs').value   = step.eracs || '';
+    $('cNote3c').value  = step.note  || '';
+  } else if(APP.type==='ji'){
+    $('jiSamp').value   = step.sampling || '';
+    $('jiCrit').value   = step.criteria || '';
+    $('jiNote').value   = step.note     || '';
+    $('jiTools').value  = step.tools    || '';
+  } else {
+    $('jbWhat').value   = step.what   || '';
+    $('jbHow').value    = step.how    || '';
+    $('jbWhy').value    = step.why    || '';
+    $('jbSafe').value   = step.safety || '';
+  }
+  $('tSt').textContent = step.stepStart!=null ? fmtVT(step.stepStart) : '—';
+  $('tEn').textContent = step.stepEnd!=null   ? fmtVT(step.stepEnd)   : '—';
+  $('tDu').textContent = mmss(step.duration || 0);
+  $('tEl').textContent = '—';
+  $('bHead').textContent = `Edit Step ${i+1}`;
+  $('ov').classList.add('open');
+  _openOv(true);
+  APP.frozen = true;
+}
+
+function fmtVT(vt){ const m=Math.floor(vt/60), s=Math.floor(vt%60); return `${m}:${s.toString().padStart(2,'0')}`; }
+
+// BUG-002 FIX: doEndCycle — guard now correctly checks doSave return value
+function doEndCycle(){
+  if(APP.frozen){
+    const saved = doSave();
+    // doSave returns false if validation failed; frozen is only cleared by doSave on success
+    if(!saved) return;
+  }
+  if(APP.running){ vid.pause(); timerPause(); APP.running=false; }
+  if(APP.cycles[APP.cur].length > 0){
+    APP.cycles.push([]);
+    APP.cur = APP.cycles.length - 1;
+  }
+  APP.cycleStartVT = null; APP.stepStartVT = null;
+  // BUG-006 FIX: clear selSet on new cycle
+  APP.selSet.clear(); APP.selMode = false;
+  timerReset();
+  $('btnStart').textContent = '▶ Start';
+  $('btnStart').disabled = !APP.vidReady;
+  $('btnStep').disabled  = true;
+  $('btnEnd').disabled   = true;
+  dot('');
+  renderTabs(); renderSteps(); syncX();
+  try{ const br=$('btnReview'); if(br) br.disabled = !allRowsFlat().length; }catch(e){} updateSelUI();
+}
+
+function dot(cls){ $('sdot').className = 'sdot' + (cls ? ' '+cls : ''); }
+
+// BUG-013 FIX: Work content chips — mutually exclusive (radio-style)
+document.querySelectorAll('#wcChips .cc').forEach(c => {
+  c.onclick = () => {
+    const wasOn = c.classList.contains('on');
+    // deselect all work content chips first
+    document.querySelectorAll('#wcChips .cc').forEach(x=>{ x.classList.remove('on'); x.querySelector('.cd').textContent=''; });
+    if(!wasOn){ c.classList.add('on'); c.querySelector('.cd').textContent='✓'; }
+  };
+});
+// BUG-013 FIX: Category chips — mutually exclusive
+document.querySelectorAll('#catChips .cc').forEach(c => {
+  c.onclick = () => {
+    const wasOn = c.classList.contains('on');
+    document.querySelectorAll('#catChips .cc').forEach(x=>{ x.classList.remove('on'); x.querySelector('.cd').textContent=''; });
+    if(!wasOn){ c.classList.add('on'); c.querySelector('.cd').textContent='✓'; }
+  };
+});
+// Characteristics: unsafe + difficult remain multi-select (intentional)
+document.querySelectorAll('.cc[data-k="unsafe"], .cc[data-k="difficult"]').forEach(c=>{
+  c.onclick = () => { c.classList.toggle('on'); const cd=c.querySelector('.cd'); if(cd) cd.textContent=c.classList.contains('on')?'✓':''; };
+});
+
+// ═══════════════════════════════════════════════
+// CYCLE TABS
+// ═══════════════════════════════════════════════
+$('btnAddCyc').onclick = () => { APP.cycles.push([]); switchCycle(APP.cycles.length-1); };
+
+function switchCycle(i){
+  if(APP.running){ vid.pause(); timerPause(); APP.running=false; }
+  $('ov').classList.remove('open');
+  APP.selMode=false; APP.selSet.clear();
+  APP.frozen=false; APP.pending=null; APP.cur=i;
+  APP.cycleStartVT=null; APP.stepStartVT=null;
+  timerReset(); vid.currentTime=0;
+  $('btnStart').textContent = '▶ Start';
+  $('btnStart').disabled = !APP.vidReady;
+  $('btnStep').disabled  = true;
+  $('btnEnd').disabled   = true;
+  dot(''); renderTabs(); renderSteps(); updateSelUI();
+}
+
+function renderTabs(){
+  $('tabs').querySelectorAll('.ctab').forEach(t=>t.remove());
+  const add = $('btnAddCyc');
+  APP.cycles.forEach((_,i)=>{
+    const t = document.createElement('button');
+    t.className = 'ctab' + (i===APP.cur?' on':'');
+    t.textContent = `Cycle ${i+1}`;
+    t.onclick = () => switchCycle(i);
+    $('tabs').insertBefore(t, add);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// RENDER STEPS
+// ═══════════════════════════════════════════════
+function renderSteps(){
+  $('sList').querySelectorAll('.scard').forEach(c=>c.remove());
+  const steps = APP.cycles[APP.cur];
+  if(APP.type==='jb' && APP.selSet && APP.selSet.size){
+    APP.selSet = new Set([...APP.selSet].filter(x=>Number.isInteger(x)&&x>=0&&x<steps.length));
+  }
+  $('emptyEl').style.display = steps.length ? 'none' : 'flex';
+  let total = 0;
+  steps.forEach((s,i)=>{
+    total += s.duration || 0;
+    const el = document.createElement('div'); el.className='scard';
+    let extra = `<div style="font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--mono)">tap to edit</div>`;
+    if(APP.type==='3c'){
+      const tmap=[
+        ['vcw','t-vcw','Value Creating'],['incidental','t-inc','Incidental'],
+        ['waste','t-wst','Waste'],['unsafe','t-uns','Unsafe'],
+        ['difficult','t-dif','Difficult'],['cyclical','t-cyc','Cyclical'],
+        ['periodic','t-per','Periodic'],['abnormal','t-abn','Abnormal'],
+      ];
+      const active = tmap.filter(([k])=>s[k]);
+      if(active.length) extra += `<div class="sc-tags">${active.map(([,c,l])=>`<span class="tag ${c}">${l}</span>`).join('')}</div>`;
+      if(s.eracs)       extra += `<div class="sc-detail"><strong>ERACS:</strong> ${esc(s.eracs)}</div>`;
+      if(s.note)        extra += `<div class="sc-detail"><strong>Note:</strong> ${esc(s.note)}</div>`;
+    } else if(APP.type==='ji'){
+      const pts=[];
+      if(s.sampling) pts.push(`<strong>QC Sampling:</strong> ${esc(s.sampling)}`);
+      if(s.criteria) pts.push(`<strong>Criteria:</strong> ${esc(s.criteria)}`);
+      if(s.note)     pts.push(`<strong>Note:</strong> ${esc(s.note)}`);
+      if(s.tools)    pts.push(`<strong>Tools:</strong> ${esc(s.tools)}`);
+      if(pts.length) extra += `<div class="sc-detail">${pts.join('<br>')}</div>`;
+    } else {
+      const pts=[];
+      if(s.how)    pts.push(`<strong>How:</strong> ${esc(s.how)}`);
+      if(s.why)    pts.push(`<strong>Why:</strong> ${esc(s.why)}`);
+      if(s.safety) pts.push(`<strong>Safety:</strong> ${esc(s.safety)}`);
+      if(pts.length) extra += `<div class="sc-detail">${pts.join('<br>')}</div>`;
+    }
+    el.innerHTML = `
+      <div class="sc-top">
+        ${APP.selMode&&APP.type==='jb' ? `<span style="font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--br);border-radius:6px;padding:2px 6px;margin-right:4px">${APP.selSet.has(i)?'☑':'☐'}</span>` : ''}
+        <span class="sc-num">STEP ${p2(i+1)}</span>
+        <span class="sc-name">${esc(s.name)}${APP.type==='jb'&&(s.what||'').trim()&&(i===0||String(steps[i-1]?.what||'')!==String(s.what||''))&&(String(s.name||'').trim().toLowerCase()!==String(s.what||'').trim().toLowerCase())?`<span style="display:block;font-family:var(--mono);font-size:9px;color:var(--gold);margin-top:2px">WHAT: ${esc(s.what)}</span>`:''}</span>
+        <span class="sc-edit">✎</span><button class="sc-del" data-i="${i}">✕</button>
+      </div>
+      <div class="sc-times">
+        <span>Duration: <b>${fmtS(s.duration)}</b></span>
+        <span>Video: <b>${mmss(s.stepStart||0)}→${mmss(s.stepEnd||0)}</b></span>
+        <span>Elapsed: <b>${fmtS(s.elapsed)}</b></span>
+      </div>${extra}`;
+    el.querySelector('.sc-del').addEventListener('click', e=>{
+      e.stopPropagation();
+      APP.cycles[APP.cur].splice(i,1);
+      if(APP.selSet.has(i)) APP.selSet.delete(i);
+      APP.selSet = new Set([...APP.selSet].map(x=>x>i?x-1:x));
+      updateSelUI(); renderSteps();
+    });
+    el.addEventListener('click', ()=>{
+      if(APP.selMode && APP.type==='jb'){
+        if(APP.selSet.has(i)) APP.selSet.delete(i); else APP.selSet.add(i);
+        updateSelUI(); renderSteps(); return;
+      }
+      if(!APP.running && !APP.frozen) openEditStep(i);
+    });
+    $('sList').appendChild(el);
+  });
+  const n = steps.length;
+  $('aInfoLbl').textContent = `Cycle ${APP.cur+1} · ${n} step${n!==1?'s':''}`;
+  if(n > 0){
+    $('sumBar').style.display = 'flex';
+    $('sumLbl').textContent   = `Cycle ${APP.cur+1} · ${n} steps`;
+    $('sumVal').textContent   = fmtS(total);
+  } else {
+    $('sumBar').style.display = 'none';
+  }
+  syncX();
+  try{ const br=$('btnReview'); if(br) br.disabled = !allRowsFlat().length; }catch(e){} updateSelUI();
+}
+
+function syncX(){
+  const hc = APP.cycles[APP.cur].length > 0;
+  const ha = APP.cycles.some(c=>c.length>0);
+  $('btnXlsx').disabled = !hc;
+  $('btnAll').disabled  = !ha;
+  $('btnCsv').disabled  = !hc;
+  $('btnJson').disabled = !hc;
+}
+
+// ═══════════════════════════════════════════════
+// JSON SAVE / LOAD
+// ═══════════════════════════════════════════════
+function serializeState(){
+  return {
+    app:        'TimeStuDY',
+    // BUG-008 FIX: use APP_REVISION constant directly, not a missing DOM element
+    version:    APP_REVISION,
+    exportedAt: new Date().toISOString(),
+    type:       APP.type,
+    meta:       APP.meta || {},
+    cycles:     APP.cycles || [[]],
+    cur:        APP.cur || 0
+  };
+}
+
+function validateState(obj){
+  if(!obj || typeof obj !== 'object') throw new Error('Invalid JSON.');
+  if(!Array.isArray(obj.cycles))      throw new Error('Missing cycles array.');
+  obj.cycles.forEach((c,ci)=>{
+    if(!Array.isArray(c)) throw new Error('Cycle '+(ci+1)+' is not an array.');
+    c.forEach((s,si)=>{ if(!s||typeof s!=='object') throw new Error(`Cycle ${ci+1} step ${si+1} is invalid.`); });
+  });
+  return true;
+}
+
+function downloadJSON(){
+  const state   = serializeState();
+  const jobName = (APP.meta?.process||APP.meta?.part||'TimeStuDY');
+  const d = new Date(), pad = n=>String(n).padStart(2,'0');
+  const date = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const time = `${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  const safe = jobName.replace(/[^a-z0-9\-_]+/gi,'_').replace(/^_+|_+$/g,'')||'TimeStuDY';
+  const fn   = `${safe}_${date}_${time}_Resume.json`;
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = fn;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>{ try{ URL.revokeObjectURL(a.href); }catch(e){} }, 800);
+}
+
+async function loadJSONFile(file){
+  const txt = await file.text();
+  const obj = JSON.parse(txt);
+  validateState(obj);
+  APP.type   = obj.type   || APP.type;
+  APP.meta   = obj.meta   || {};
+  APP.cycles = obj.cycles || [[]];
+  APP.cur    = Math.min(Math.max(Number(obj.cur||0),0), APP.cycles.length-1);
+  APP.selMode=false; APP.selSet.clear(); updateSelUI();
+  APP.running=false; APP.frozen=false; APP.editIdx=null;
+  APP.stepStartVT=null; APP.cycleStartVT=null;
+  try{ if(APP.raf) cancelAnimationFrame(APP.raf); }catch(e){}
+  APP.raf=null; APP.tStart=null; APP.tAccum=0;
+  $('timerEl').textContent = '00:00.0';
+  applyType(); renderTabs(); renderSteps(); syncX();
+  try{ const br=$('btnReview'); if(br) br.disabled = !allRowsFlat().length; }catch(e){}
+  if(!APP.vidReady){
+    const vn = APP.meta?.videoName ? `\nVideo to re-select: ${APP.meta.videoName}` : '';
+    toast('Resume loaded. Pick the same video to continue.' + (APP.meta?.videoName ? '' : ''));
+    if(vn) alert('Resume loaded.\n\nNow tap "Choose Video" and select the same video file.'+vn);
+  }
+}
+
+$('btnJson').onclick     = () => downloadJSON();
+$('btnLoadJson').onclick = () => $('jsonIn').click();
+$('jsonIn').addEventListener('change', e=>{
+  const f = e.target.files[0]; e.target.value='';
+  if(!f) return;
+  loadJSONFile(f).catch(err=>alert('Failed to load JSON:\n'+(err?.message||err)));
+});
+
+// ═══════════════════════════════════════════════
+// XLSX GENERATOR
+// ═══════════════════════════════════════════════
+$('btnXlsx').onclick = () => doXlsx([APP.cur]);
+$('btnAll').onclick  = () => doXlsx(APP.cycles.map((_,i)=>i).filter(i=>APP.cycles[i].length>0));
+$('btnCsv').onclick  = () => doCSV(APP.cycles[APP.cur]);
+
+const XS={
+  DEF:0,BLK:1,VCW:2,UNS:3,CAT:4,NUM:5,TXT:6,TTL:7,META:8,
+  VCWD:9,UNSD:10,CATD:11,NCTR:12,
+  JIHDR:13,JIPART:14,
+  JBTITL:15,JBLBL:16,JBVAL:17,JBCHDR:18,JBSUB:19,
+  JBWHITEN:20,JBWHITE:21,JBALTN:22,JBALTD:23,
+  ERACS:24,ERACHDR:25,
+};
+
+const STYLES_XML=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="10">
+<font><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="12"/><color rgb="FF000000"/><name val="Calibri"/></font>
+<font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+<font><b/><sz val="18"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+<font><sz val="14"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+<font><b/><sz val="20"/><color rgb="FF000000"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><color rgb="FF000000"/><name val="Calibri"/></font>
+<font><i/><sz val="9"/><color rgb="FF333333"/><name val="Calibri"/></font>
+<font><sz val="11"/><color rgb="FF000000"/><name val="Calibri"/></font>
+</fonts>
+<fills count="9">
+<fill><patternFill patternType="none"/></fill>
+<fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF000000"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFE2EEDA"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFD9E2F3"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CB"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF262626"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFD9D9D9"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/></patternFill></fill>
+</fills>
+<borders count="4">
+<border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color rgb="FF888888"/></left><right style="thin"><color rgb="FF888888"/></right><top style="thin"><color rgb="FF888888"/></top><bottom style="thin"><color rgb="FF888888"/></bottom><diagonal/></border>
+<border><left style="thin"><color rgb="FF000000"/></left><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom><diagonal/></border>
+<border><left style="dashDot"><color rgb="FFFF0000"/></left><right style="dashDot"><color rgb="FFFF0000"/></right><top style="dashDot"><color rgb="FFFF0000"/></top><bottom style="dashDot"><color rgb="FFFF0000"/></bottom><diagonal/></border>
+</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="26">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"/>
+<xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="1" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="1" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="1" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="1" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="5" fillId="6" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="7" fillId="8" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="6" fillId="0" borderId="0" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="7" fillId="8" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="9" fillId="8" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="5" fillId="6" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="8" fillId="7" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="7" fillId="8" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="9" fillId="8" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="7" fillId="7" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="9" fillId="7" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="3" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="3" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+<dxfs count="0"/><tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/>
+</styleSheet>`;
+
+function escapeXml(s){
+  return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+const xe = escapeXml;
+
+function colLetter(n){
+  let r=''; n++;
+  while(n){ const m=(n-1)%26; r=String.fromCharCode(65+m)+r; n=Math.floor((n-1)/26); }
+  return r;
+}
+function cellStr(addr,s,style){ return `<c r="${addr}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${escapeXml(s)}</t></is></c>`; }
+function cellNum(addr,v,style){ const n=Number(v); return `<c r="${addr}" s="${style}"><v>${isFinite(n)?n:0}</v></c>`; }
+
+function makeSheetData(fn_populate, colWidths){
+  const cellMap={}, merges=[], rh={}, seen=new Set();
+  const c=(r,col,v,s=0,num=false)=>{
+    const key=`${r},${col}`; if(seen.has(key))return; seen.add(key);
+    cellMap[key]={v:String(v??''),s,num};
+  };
+  const m=(r1,c1,r2,c2)=>merges.push([r1,c1,r2,c2]);
+  const h=(r,ht)=>{ rh[r]=ht; };
+  fn_populate(c,m,h);
+  const cells=Object.entries(cellMap).map(([k,cv])=>{ const[r,col]=k.split(',').map(Number); return{r,col,...cv}; });
+  return{cells,merges,rh,colWidths};
+}
+
+function renderSheetXml(sd){
+  const{cells,merges,rh,colWidths}=sd;
+  let maxR=0, maxC=0;
+  cells.forEach(cv=>{ if(cv.r>maxR)maxR=cv.r; if(cv.col>maxC)maxC=cv.col; });
+  const byRow={};
+  cells.forEach(cv=>{ (byRow[cv.r]=byRow[cv.r]||[]).push(cv); });
+  let xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  xml+='<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">';
+  xml+='<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>';
+  xml+=`<dimension ref="A1:${colLetter(maxC)}${maxR+1}"/>`;
+  xml+='<sheetViews><sheetView workbookViewId="0"><selection activeCell="A1" sqref="A1"/></sheetView></sheetViews>';
+  xml+='<sheetFormatPr baseColWidth="8" defaultRowHeight="15"/>';
+  if(colWidths&&colWidths.length){
+    xml+='<cols>';
+    colWidths.forEach((w,i)=>{ xml+=`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`; });
+    xml+='</cols>';
+  }
+  xml+='<sheetData>';
+  for(let r=0;r<=maxR;r++){
+    const ht=rh[r]||15;
+    const rowCells=(byRow[r]||[]).sort((a,b)=>a.col-b.col);
+    if(rowCells.length||rh[r]!==undefined){
+      xml+=`<row r="${r+1}" ht="${ht}" customHeight="1">`;
+      rowCells.forEach(cv=>{ const addr=colLetter(cv.col)+(r+1); xml+=cv.num?cellNum(addr,cv.v,cv.s):cellStr(addr,cv.v,cv.s); });
+      xml+='</row>';
+    }
+  }
+  xml+='</sheetData>';
+  if(merges.length){
+    xml+=`<mergeCells count="${merges.length}">`;
+    merges.forEach(([r1,c1,r2,c2])=>{ xml+=`<mergeCell ref="${colLetter(c1)}${r1+1}:${colLetter(c2)}${r2+1}"/>`; });
+    xml+='</mergeCells>';
+  }
+  xml+='<pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5"/>';
+  xml+='<pageSetup paperSize="9" fitToHeight="0" orientation="landscape"/>';
+  xml+='</worksheet>';
+  return xml;
+}
+
+function validateXlsx(sheetXmls,stylesXml){
+  const errors=[], parser=new DOMParser();
+  [...sheetXmls,stylesXml].forEach((xml,i)=>{
+    const doc=parser.parseFromString(xml,'application/xml');
+    const err=doc.querySelector('parsererror');
+    if(err) errors.push(`XML parse error in part ${i}: ${err.textContent.slice(0,100)}`);
+  });
+  sheetXmls.forEach((xml,si)=>{
+    const refs=new Set();
+    for(const m of xml.matchAll(/<c r="([^"]+)"/g)){
+      if(refs.has(m[1])) errors.push(`Sheet ${si+1}: duplicate cell ref ${m[1]}`);
+      refs.add(m[1]);
+      if(!/^[A-Z]+[0-9]+$/.test(m[1])) errors.push(`Sheet ${si+1}: invalid cell ref ${m[1]}`);
+    }
+    for(const m of xml.matchAll(/<c r="[^"]*" s="\d+">\s*<v>([^<]+)<\/v>/g)){
+      if(!isFinite(Number(m[1]))) errors.push(`Sheet ${si+1}: invalid numeric value "${m[1]}"`);
+    }
+  });
+  return errors;
+}
+
+function buildZip(files){
+  const enc=new TextEncoder(), parts=[], cd=[];
+  let offset=0;
+  const u32=n=>{ const b=new Uint8Array(4); new DataView(b.buffer).setUint32(0,n,true); return b; };
+  const u16=n=>{ const b=new Uint8Array(2); new DataView(b.buffer).setUint16(0,n,true); return b; };
+  function crc32(buf){
+    let c=0xFFFFFFFF;
+    const t=new Uint32Array(256);
+    for(let i=0;i<256;i++){ let v=i; for(let j=0;j<8;j++) v=v&1?(v>>>1)^0xEDB88320:(v>>>1); t[i]=v; }
+    for(let i=0;i<buf.length;i++) c=t[(c^buf[i])&0xFF]^(c>>>8);
+    return(c^0xFFFFFFFF)>>>0;
+  }
+  for(const f of files){
+    const nb=enc.encode(f.name), data=f.data instanceof Uint8Array?f.data:enc.encode(f.data);
+    const crc=crc32(data);
+    const lh=new Uint8Array([0x50,0x4B,0x03,0x04,20,0,0,0,0,0,0,0,0,0,...u32(crc),...u32(data.length),...u32(data.length),...u16(nb.length),0,0,...nb]);
+    const cde=new Uint8Array([0x50,0x4B,0x01,0x02,20,0,20,0,0,0,0,0,0,0,0,0,...u32(crc),...u32(data.length),...u32(data.length),...u16(nb.length),0,0,0,0,0,0,0,0,0,0,0,0,...u32(offset),...nb]);
+    parts.push(lh,data); cd.push(cde); offset+=lh.length+data.length;
+  }
+  const cdData=concat(cd);
+  const eocd=new Uint8Array([0x50,0x4B,0x05,0x06,0,0,0,0,...u16(files.length),...u16(files.length),...u32(cdData.length),...u32(offset),0,0]);
+  return concat([...parts,cdData,eocd]);
+}
+function concat(arrays){
+  const total=arrays.reduce((n,a)=>n+a.length,0), out=new Uint8Array(total); let pos=0;
+  for(const a of arrays){ out.set(a,pos); pos+=a.length; }
+  return out;
+}
+
+function buildXlsx(sheetDatas,sheetNames){
+  const enc=s=>new TextEncoder().encode(s), n=sheetDatas.length;
+  const THEME_XML=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme"><a:themeElements><a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="44546A"/></a:dk2><a:lt2><a:srgbClr val="E7E6E6"/></a:lt2><a:accent1><a:srgbClr val="4472C4"/></a:accent1><a:accent2><a:srgbClr val="ED7D31"/></a:accent2><a:accent3><a:srgbClr val="A5A5A5"/></a:accent3><a:accent4><a:srgbClr val="FFC000"/></a:accent4><a:accent5><a:srgbClr val="5B9BD5"/></a:accent5><a:accent6><a:srgbClr val="70AD47"/></a:accent6><a:hlink><a:srgbClr val="0563C1"/></a:hlink><a:folHlink><a:srgbClr val="954F72"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Calibri Light"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont><a:minorFont><a:latin typeface="Calibri"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme><a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:lumMod val="110000"/><a:satMod val="105000"/><a:tint val="67000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:lumMod val="105000"/><a:satMod val="109000"/><a:tint val="81000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:satMod val="103000"/><a:lumMod val="102000"/><a:tint val="94000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:lumMod val="99000"/><a:satMod val="120000"/><a:shade val="78000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/><a:miter lim="800000"/></a:ln><a:ln w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/><a:miter lim="800000"/></a:ln><a:ln w="19050" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:prstDash val="solid"/><a:miter lim="800000"/></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad="57150" dist="19050" dir="5400000" algn="ctr" rotWithShape="0"><a:srgbClr val="000000"><a:alpha val="63000"/></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"><a:tint val="95000"/><a:satMod val="170000"/></a:schemeClr></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="93000"/><a:satMod val="150000"/><a:shade val="98000"/><a:lumMod val="102000"/></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="63000"/><a:satMod val="120000"/></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme>`;
+  const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>${sheetDatas.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`;
+  const dr=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  const wr=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheetDatas.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${n+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId${n+2}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/><Relationship Id="rId${n+3}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>`;
+  const wb=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheetNames.map((nm,i)=>`<sheet name="${escapeXml(nm)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`;
+  const ssXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="0" uniqueCount="0"></sst>`;
+  const sheetXmls=sheetDatas.map(sd=>renderSheetXml(sd));
+  const validationErrors=validateXlsx(sheetXmls,STYLES_XML);
+  if(validationErrors.length){ console.error('XLSX validation errors:',validationErrors); alert('Export error: '+validationErrors[0]); return null; }
+  return buildZip([
+    {name:'[Content_Types].xml',data:enc(ct)},
+    {name:'_rels/.rels',data:enc(dr)},
+    {name:'xl/workbook.xml',data:enc(wb)},
+    {name:'xl/_rels/workbook.xml.rels',data:enc(wr)},
+    {name:'xl/styles.xml',data:enc(STYLES_XML)},
+    {name:'xl/theme/theme1.xml',data:enc(THEME_XML)},
+    {name:'xl/sharedStrings.xml',data:enc(ssXml)},
+    ...sheetXmls.map((xml,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:enc(xml)}))
+  ]);
+}
+
+function dlXlsx(sheetDatas,sheetNames,fname){
+  const bytes=buildXlsx(sheetDatas,sheetNames); if(!bytes)return;
+  const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.style.display='none'; a.href=url; a.download=fname;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },1000);
+}
+
+// BUG-010 FIX: uniqPush — only dedup true duplicates, allow intentional repeats
+// Changed: removed case-insensitive match across full array; only dedup consecutive identical lines
+function uniqPush(arr, val){
+  const v = String(val??'').trim(); if(!v) return;
+  const last = arr.length ? arr[arr.length-1] : null;
+  // Only skip if this exact string is the same as the immediately preceding entry
+  if(last !== null && last === v) return;
+  arr.push(v);
+}
+
+function groupStepsForJB(steps){
+  const groups=new Map(), order=[];
+  for(let i=0;i<steps.length;i++){
+    const s=steps[i]||{};
+    const key=String(s.what||'').trim();
+    const gkey=key?('what:'+key.toLowerCase()):('idx:'+i);
+    if(!groups.has(gkey)){
+      const g={ what:key, name:key||(String(s.name||'').trim()), duration:0, howList:[], whyList:[], safetyList:[] };
+      groups.set(gkey,g); order.push(gkey);
+    }
+    const g=groups.get(gkey);
+    g.duration+=Number(s.duration||0);
+    String(s.how||'').split('\n').forEach(v=>uniqPush(g.howList,v));
+    String(s.why||'').split('\n').forEach(v=>uniqPush(g.whyList,v));
+    String(s.safety||'').split('\n').forEach(v=>uniqPush(g.safetyList,v));
+  }
+  return order.map(k=>{
+    const g=groups.get(k);
+    return { what:g.what, name:g.name, duration:g.duration, how:g.howList.join('\n'), why:g.whyList.join('\n'), safety:g.safetyList.join('\n') };
+  });
+}
+
+// ═══════════════════════════════════════════════
+// BUG-007 FIX: Translation with explicit user notification
+// ═══════════════════════════════════════════════
+const TR_CACHE=new Map();
+let _xlatFailed=false;
+
+async function translateUserText(txt,target){
+  const t=String(txt??''); if(!t.trim())return t;
+  const key=target+'|'+t; if(TR_CACHE.has(key))return TR_CACHE.get(key);
+  if(_xlatFailed){ TR_CACHE.set(key,t); return t; }
+  const payload={q:t,source:'auto',target,format:'text'};
+  const endpoints=['https://libretranslate.com/translate','https://translate.astian.org/translate'];
+  for(const url of endpoints){
+    try{
+      const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      if(!res.ok) continue;
+      const js=await res.json();
+      const out=js.translatedText||t;
+      TR_CACHE.set(key,out); return out;
+    }catch(e){/* try next */}
+  }
+  // All endpoints failed — flag it so we warn the user
+  _xlatFailed=true;
+  TR_CACHE.set(key,t); return t;
+}
+
+function expLang(){ return $('expLang')?.value||'both'; }
+function locStatic(s){
+  const T_STATIC={
+    '3C FRAMEWORK\nWORK OBSERVATION AND IMPROVEMENT SHEET':'MARCO 3C\nHOJA DE OBSERVACIÓN Y MEJORA DEL TRABAJO',
+    '3C= WORK\nCHARACTERISTIC':'3C= CARACTERÍSTICA\nDEL TRABAJO','3C= WORK\nCONTENT':'3C= CONTENIDO\nDEL TRABAJO',
+    '3C= WORK\nCATAGORIES':'3C= CATEGORÍAS\nDEL TRABAJO','Step #':'Paso #','Work Steps':'Pasos de trabajo',
+    'Time\n(sec)':'Tiempo\n(seg)','ERACS\nE=Eliminate,\nR=Rearrange,\nA=Add/Subtract\nC=Combine, S=Simplify':'ERACS\nE=Eliminar\nR=Reordenar\nA=Agregar/Eliminar\nC=Combinar, S=Simplificar',
+    'Unsafe\nWork':'Trabajo\nInseguro','Difficult\nWork':'Trabajo\nDifícil','Value\nWork':'Trabajo\nde Valor',
+    'Incidental\nWork':'Trabajo\nIncidental','Waste':'Desperdicio','Work Category\nCyclical,\nPeriodic\nAbnormal':'Categoría\nCíclico\nPeriódico\nAnormal',
+    '#':'#','Step':'Paso','Quality Check':'Chequeo de calidad','Note':'Nota','Time':'Tiempo',
+    'Sampling':'Muestreo','Criteria':'Criterio','Tools':'Herramientas',
+    'JOB INSTRUCTION SHEET':'HOJA DE INSTRUCCIÓN DE TRABAJO','JOB BREAKDOWN SHEET':'HOJA DE DESGLOSE DEL TRABAJO',
+    'Job Breakdown Sheet':'Hoja de desglose del trabajo','Prepared by:':'Preparado por:',
+    'Department:':'Departamento:','Job:':'Trabajo:','Date:':'Fecha:',
+    'Important step':'Paso importante','Key points':'Puntos clave','Reasons':'Razones',
+    '(TOTAL EACH COLUMN)\nTotal':'(TOTAL POR COLUMNA)\nTotal',
+  };
+  const mode=expLang(), es=T_STATIC[s]||s;
+  if(mode==='en') return s;
+  if(mode==='es') return es;
+  if(String(es).trim()===String(s).trim()) return s;
+  return `${es}\n${s}`;
+}
+async function locUser(s){
+  const mode=expLang(), src=String(s??'');
+  if(mode==='en') return src;
+  const es=await translateUserText(src,'es');
+  if(mode==='es') return es;
+  if(String(es).trim().toLowerCase()===src.trim().toLowerCase()) return src;
+  return `${es}\n${src}`;
+}
+
+async function doXlsx(idxs){
+  const M=APP.meta;
+  const names={'3c':'3C_Observation','ji':'Job_Instruction','jb':'Job_Breakdown'};
+  const d=(M.date||new Date().toLocaleDateString('en-US')).replace(/\//g,'-');
+  const sds=[], sns=[];
+  const mode=expLang();
+
+  // BUG-007 FIX: Show translation banner before starting, warn if fails
+  _xlatFailed=false;
+  if(mode!=='en'){
+    const banner=$('xlatBanner'); if(banner) banner.classList.add('show');
+  }
+
+  async function localizeSteps(steps){
+    if(mode==='en') return steps;
+    const out=[];
+    for(const s of steps){
+      const ns={...s};
+      ns.name=await locUser(s.name||''); ns.note=await locUser(s.note||'');
+      ns.sampling=await locUser(s.sampling||''); ns.criteria=await locUser(s.criteria||'');
+      ns.tools=await locUser(s.tools||''); ns.what=await locUser(s.what||'');
+      ns.how=await locUser(s.how||''); ns.why=await locUser(s.why||'');
+      ns.safety=await locUser(s.safety||''); ns.eracs=await locUser(s.eracs||'');
+      out.push(ns);
+    }
+    return out;
+  }
+
+  for(const ci of idxs){
+    const rawSteps=APP.cycles[ci]; if(!rawSteps.length) continue;
+    const steps=APP.type==='jb' ? groupStepsForJB(rawSteps) : rawSteps;
+    const sn=idxs.length>1 ? `Cycle ${ci+1}` : 'Sheet1';
+    const stepsL=await localizeSteps(steps);
+    let sd;
+    if(APP.type==='3c')      sd=sheet3C(stepsL,M);
+    else if(APP.type==='ji') sd=sheetJI(stepsL,M);
+    else                     sd=sheetJB(stepsL,M);
+    sds.push(sd); sns.push(sn);
+  }
+
+  // BUG-007 FIX: hide banner, warn if translation silently failed
+  const banner=$('xlatBanner'); if(banner) banner.classList.remove('show');
+  if(_xlatFailed && mode!=='en'){
+    toast('⚠ Translation service unavailable — exported in English only', 4000);
+  }
+
+  if(!sds.length) return;
+  const fname=`TimeStuDY_${names[APP.type]}_${d}${(_xlatFailed&&mode!=='en')?'_EN-ONLY':''}.xlsx`;
+  dlXlsx(sds,sns,fname);
+}
+
+// BUG-004 FIX: removed dead `prevWhat` variable from sheet3C
+function sheet3C(steps,M){
+  return makeSheetData((c,m,h)=>{
+    const tot=steps.reduce((a,s)=>a+(s.duration||0),0);
+    c(0,0,locStatic('3C FRAMEWORK\nWORK OBSERVATION AND IMPROVEMENT SHEET'),XS.TTL); m(0,0,0,3);
+    c(0,4,locStatic('3C= WORK\nCHARACTERISTIC'),XS.UNS); m(0,4,0,5);
+    c(0,6,locStatic('3C= WORK\nCONTENT'),XS.VCW); m(0,6,0,8);
+    c(0,9,locStatic('3C= WORK\nCATAGORIES'),XS.CAT);
+    h(0,28);
+    c(1,0,locStatic('Step #'),XS.BLK); m(1,0,2,0);
+    c(1,1,locStatic('Work Steps'),XS.BLK); m(1,1,2,1);
+    c(1,2,locStatic('Time\n(sec)'),XS.BLK); m(1,2,2,2);
+    c(1,3,locStatic('ERACS\nE=Eliminate,\nR=Rearrange,\nA=Add/Subtract\nC=Combine, S=Simplify'),XS.ERACHDR); m(1,3,2,3);
+    c(1,4,locStatic('Unsafe\nWork'),XS.UNS); m(1,4,2,4);
+    c(1,5,locStatic('Difficult\nWork'),XS.UNS); m(1,5,2,5);
+    c(1,6,locStatic('Value\nWork'),XS.VCW); m(1,6,2,6);
+    c(1,7,locStatic('Incidental\nWork'),XS.VCW); m(1,7,2,7);
+    c(1,8,locStatic('Waste'),XS.VCW); m(1,8,2,8);
+    c(1,9,locStatic('Work Category\nCyclical,\nPeriodic\nAbnormal'),XS.CAT); m(1,9,2,9);
+    h(1,55); h(2,15);
+    c(3,0,`Observer: ${M.analyst||''}`,XS.META); m(3,0,3,1);
+    c(3,2,`Steps: ${steps.length}`,XS.META);
+    c(3,3,`Dept: ${M.dept||''}`,XS.META); m(3,3,3,9);
+    h(3,16);
+    steps.forEach((s,i)=>{
+      const r=4+i;
+      c(r,0,i+1,XS.NUM,true);
+      c(r,1,s.name||'',XS.TXT);
+      c(r,2,+(s.duration||0).toFixed(0),XS.NCTR,true);
+      c(r,3,s.eracs||'',XS.ERACS);
+      c(r,4,s.unsafe?'x':'',XS.UNSD);
+      c(r,5,s.difficult?'x':'',XS.UNSD);
+      c(r,6,s.vcw?'x':'',XS.VCWD);
+      c(r,7,s.incidental?'x':'',XS.VCWD);
+      c(r,8,s.waste?'x':'',XS.VCWD);
+      const cat=s.cyclical?'C':s.periodic?'P':s.abnormal?'A':'';
+      c(r,9,cat,XS.CATD);
+      h(r,35.25);
+    });
+    const sr=4+steps.length; h(sr,7.15);
+    const tr=sr+1;
+    c(tr,0,locStatic('(TOTAL EACH COLUMN)\nTotal'),XS.CAT); m(tr,0,tr,1);
+    c(tr,2,+(tot).toFixed(0),XS.CAT,true);
+    c(tr,3,locStatic(''),XS.CAT);
+    [[4,'unsafe'],[5,'difficult'],[6,'vcw'],[7,'incidental'],[8,'waste']].forEach(([col,k])=>{
+      c(tr,col,steps.filter(s=>s[k]).length||0,XS.CAT,true);
+    });
+    c(tr,9,locStatic(''),XS.CAT);
+    h(tr,23.45);
+  },[7,54,9,22,9,9,9,11,8,16]);
+}
+
+function sheetJI(steps,M){
+  return makeSheetData((c,m,h)=>{
+    const tot=steps.reduce((a,s)=>a+(s.duration||0),0);
+    c(0,0,`Job Instruction Sheet\n${M.process||''}`,XS.JIHDR); m(0,0,1,1); h(0,33.6);
+    c(0,2,`Part #: ${M.part||''}`,XS.JIPART); m(0,2,0,3);
+    c(0,4,`Required Quantity:\n${M.qty||''}`,XS.JIHDR); m(0,4,1,4);
+    c(0,5,`Date:\n${M.date||''}`,XS.JIHDR); m(0,5,1,5);
+    c(0,6,`Dept./Location:\n${M.dept||''}`,XS.JIHDR);
+    c(0,7,`Team Leader:\n${M.leader||''}`,XS.JIHDR); m(0,7,1,7);
+    c(0,8,`Supervisor:\n${M.supervisor||''}`,XS.JIHDR); m(0,8,1,8); h(1,32.1);
+    c(1,2,`Part Name: ${M.part||''}`,XS.JIPART); m(1,2,1,3);
+    c(1,6,`Prepared By:\n${M.analyst||''}`,XS.JIHDR);
+    c(2,0,locStatic('#'),XS.BLK); m(2,0,3,0);
+    c(2,1,locStatic('Step'),XS.BLK); m(2,1,3,1);
+    c(2,2,locStatic('Quality Check'),XS.BLK); m(2,2,2,3);
+    c(2,4,locStatic('Note'),XS.BLK); m(2,4,3,4);
+    c(2,5,locStatic('Time'),XS.BLK); m(2,5,3,5);
+    c(2,6,`Takt Time\n${M.takt||'-'} secs`,XS.BLK); m(2,6,3,6);
+    c(2,7,`Cycle Time\n${M.cycle||'-'} secs`,XS.BLK); m(2,7,3,7);
+    // BUG-014 FIX: stdwip now comes from M.stdwip (collected in collectMeta)
+    c(2,8,`STD WIP\n${M.stdwip||''}`,XS.BLK); m(2,8,3,8);
+    c(3,2,locStatic('Sampling'),XS.BLK); c(3,3,locStatic('Criteria'),XS.BLK);
+    h(2,18); h(3,30);
+    steps.forEach((s,i)=>{
+      const r=4+i;
+      c(r,0,i+1,XS.NCTR,true);
+      c(r,1,s.name||'',XS.TXT);
+      c(r,2,s.sampling||'',XS.TXT);
+      c(r,3,s.criteria||'',XS.TXT);
+      c(r,4,(s.note||'')+(s.tools?'\nTools: '+s.tools:''),XS.TXT);
+      c(r,5,+(s.duration||0).toFixed(0),XS.NCTR,true);
+      h(r,39.6);
+    });
+    const tr=4+steps.length; h(tr,30);
+    c(tr,5,+(tot).toFixed(0),XS.NCTR,true);
+  },[3.4,49.5,11.2,15.9,22.6,12.2,20.6,10.9,10.4]);
+}
+
+function sheetJB(steps,M){
+  return makeSheetData((c,m,h)=>{
+    const allPPE=['Safety Boots','Safety Glasses','Hearing Protection','Safety Gloves','Safety Sleeves','Safety Jacket'];
+    const ppe=M.ppe||[];
+    c(0,0,locStatic('JOB BREAKDOWN SHEET'),XS.JBTITL); m(0,0,0,3); h(0,40);
+    c(1,0,locStatic('LINE | WORKSTATION | PROCESS:'),XS.JBLBL);
+    c(1,1,M.process||'',XS.JBVAL); m(1,1,1,3); h(1,22);
+    c(2,0,locStatic('TOOLS & MATERIALS:'),XS.JBLBL);
+    c(2,1,M.tools||'',XS.JBVAL); m(2,1,2,3); h(2,22);
+    c(3,0,locStatic('PPE REQUIRED\n(CIRCLE ALL THAT APPLY):'),XS.JBLBL);
+    const ppe4=allPPE.slice(0,4).map(p=>ppe.includes(p)?p+' [X]':p).join('     ');
+    c(3,1,ppe4,XS.JBVAL); m(3,1,3,3); h(3,20);
+    c(4,0,locStatic(''),XS.JBLBL);
+    const ppe2=allPPE.slice(4).map(p=>ppe.includes(p)?p+' [X]':p).join('     ')+'     Other, Describe: '+(M.ppeOther||'');
+    c(4,1,ppe2,XS.JBVAL); m(4,1,4,3); h(4,20);
+    h(5,4);
+    c(6,0,locStatic('STEP'),XS.JBCHDR);
+    c(6,1,locStatic('IMPORTANT STEP | WHAT?'),XS.JBCHDR);
+    c(6,2,locStatic('KEY POINTS | HOW?'),XS.JBCHDR);
+    c(6,3,locStatic('REASONS | WHY?'),XS.JBCHDR);
+    h(6,22);
+    c(7,0,locStatic(''),XS.JBSUB);
+    c(7,1,locStatic('A logical part of the process when something happens to advance the work'),XS.JBSUB);
+    c(7,2,locStatic('Anything in the step that might: Make or break the job, injure the worker, and/or make the work easier or more efficient'),XS.JBSUB);
+    c(7,3,locStatic('Reasons for the key points'),XS.JBSUB);
+    h(7,30);
+    let prevWhat='';
+    steps.forEach((s,i)=>{
+      const r=8+i, alt=i%2===1;
+      const dn=alt?XS.JBALTN:XS.JBWHITEN, dd=alt?XS.JBALTD:XS.JBWHITE;
+      const howLines=(s.how||'').split('\n').filter(l=>l.trim()).map(l=>l.startsWith('-')||l.startsWith('\u26a0')?l:'- '+l);
+      if(s.safety){
+        const sLines=String(s.safety).split('\n').filter(l=>l.trim());
+        if(!sLines.length){ howLines.push('- \u26a0 Safety: '+String(s.safety)); }
+        else { sLines.forEach(l=>howLines.push('- \u26a0 Safety: '+l)); }
+      }
+      const whyLines=(s.why||'').split('\n').filter(l=>l.trim()).map(l=>l.startsWith('-')?l:'- '+l);
+      c(r,0,i+1,dn,true);
+      const curWhat=(s.what||'').trim(), nm=(s.name||'').trim();
+      const showWhat=curWhat?(prevWhat=curWhat,curWhat):(prevWhat&&nm&&nm.toLowerCase()===prevWhat.toLowerCase()?'':nm);
+      c(r,1,showWhat,dd);
+      c(r,2,howLines.join('\n'),dd);
+      c(r,3,whyLines.join('\n'),dd);
+      h(r,55);
+    });
+    const br=8+steps.length;
+    c(br,0,locStatic(''),XS.JBCHDR); c(br,1,locStatic(''),XS.JBCHDR);
+    c(br,2,locStatic(''),XS.JBCHDR); c(br,3,locStatic(''),XS.JBCHDR);
+    h(br,6);
+  },[28,28,60,32]);
+}
+
+async function doCSV(steps){
+  const M=APP.meta; let rows;
+  if(APP.type==='3c'){
+    rows=[[locStatic('Step #'),locStatic('Work Steps'),'Time (sec)','ERACS','Unsafe','Difficult','Value Creating','Incidental','Waste','Work Category','Notes']];
+    steps.forEach((s,i)=>{
+      const cat=s.cyclical?'Cyclical':s.periodic?'Periodic':s.abnormal?'Abnormal':'';
+      rows.push([i+1,s.name,+(s.duration||0).toFixed(0),s.eracs||'',s.unsafe?'x':'',s.difficult?'x':'',s.vcw?'x':'',s.incidental?'x':'',s.waste?'x':'',cat,s.note||'']);
+    });
+  } else if(APP.type==='ji'){
+    rows=[[locStatic('Step #'),'Step','Sampling','Criteria','Note','Tools','Time (sec)']];
+    for(let i=0;i<steps.length;i++){ const s=steps[i]; rows.push([i+1,s.name,s.sampling||'',s.criteria||'',s.note||'',s.tools||'',+(s.duration||0).toFixed(0)]); }
+  } else {
+    rows=[['Step #','WHAT','HOW','WHY','Safety']];
+    let prevWhat='';
+    for(let i=0;i<steps.length;i++){
+      const s=steps[i], curWhat=(s.what||'').trim(), nm=(s.name||'').trim();
+      const showWhat=curWhat?(prevWhat=curWhat,curWhat):(prevWhat&&nm&&nm.toLowerCase()===prevWhat.toLowerCase()?'':nm);
+      rows.push([i+1,showWhat,s.how||'',s.why||'',s.safety||'']);
+    }
+  }
+  const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`TimeStuDY_${APP.type.toUpperCase()}_${(M.date||'export').replace(/\//g,'-')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+
+document.addEventListener('touchmove', e=>{
+  if(!e.target.closest('.slist,.scroll,.bsheet')) e.preventDefault();
+},{passive:false});
+
+// ═══════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════
+function resetStudy(){
+  if(APP.running){ vid.pause(); timerPause(); APP.running=false; }
+  $('ov').classList.remove('open');
+  APP.frozen=false; APP.pending=null; APP.editIdx=null;
+  APP.cycles=[[]]; APP.cur=0;
+  APP.stepStartVT=null; APP.cycleStartVT=null;
+  APP.selMode=false; APP.selSet.clear();
+  timerReset(); dot('');
+  $('pFill').style.width='0%';
+  renderTabs(); renderSteps(); updateSelUI(); syncX();
+  try{ const br=$('btnReview'); if(br) br.disabled = !allRowsFlat().length; }catch(e){}
+  // BUG-003 FIX: clearVideoSource sets btnStart.disabled — no double assignment
+  clearVideoSource();
+  try{ $('fIn').value=''; }catch(e){}
+}
+
+// ═══════════════════════════════════════════════
+// JOB BREAKDOWN: multi-select grouping
+// ═══════════════════════════════════════════════
+function toggleSelMode(){
+  if(APP.type!=='jb')return;
+  APP.selMode=!APP.selMode;
+  if(!APP.selMode) APP.selSet.clear();
+  updateSelUI(); renderSteps();
+}
+function clearSelection(){
+  APP.selSet.clear(); updateSelUI(); renderSteps();
+}
+function updateSelUI(){
+  const on=APP.selMode;
+  $('btnSelMode').classList.toggle('on',on);
+  $('btnSelMode').textContent=on?'Selecting…':'Select Steps';
+  const n=APP.selSet.size;
+  $('btnGroupSel').disabled=!on||n<2;
+  $('btnClearSel').disabled=!on||n===0;
+  $('selCount').textContent=on?(n?`${n} selected`:''):'';
+}
+function groupSelection(){
+  if(APP.type!=='jb')return;
+  const steps=APP.cycles[APP.cur];
+  const ids=[...APP.selSet].filter(i=>Number.isInteger(i)&&i>=0&&i<steps.length).sort((a,b)=>a-b);
+  if(ids.length<2){ APP.selSet.clear(); updateSelUI(); renderSteps(); return; }
+  const what=prompt('Group selected micro-steps under WHAT (overall step name):',''); if(!what||!what.trim())return;
+  ids.forEach(i=>{ steps[i].what=what.trim(); });
+  APP.selSet.clear(); APP.selMode=false; updateSelUI(); renderSteps();
+}
+
+// ═══════════════════════════════════════════════
+// PRIOR ENTRY DROPDOWN
+// ═══════════════════════════════════════════════
+function buildPriorOptions(){
+  const sel=$('priorSel'), prev=sel.value;
+  sel.innerHTML='<option value="">— Select prior —</option>';
+  const all=[];
+  APP.cycles.forEach((cyc,ci)=>cyc.forEach((s,si)=>{
+    const has=(s.name||'').trim()||s.note||s.sampling||s.criteria||s.tools||s.what||s.how||s.why||s.safety||s.eracs;
+    if(!has)return;
+    all.push({key:`${ci}:${si}`,label:`Cycle ${ci+1} · Step ${si+1} — ${s.name||s.what||('Step '+(si+1))}`,step:s});
+  }));
+  all.slice(-80).forEach(o=>{
+    const opt=document.createElement('option'); opt.value=o.key; opt.textContent=o.label;
+    sel.appendChild(opt);
+  });
+  sel.value=prev;
+}
+
+function applyPrior(){
+  const v=$('priorSel').value; if(!v)return;
+  const[ci,si]=v.split(':').map(Number);
+  const s=APP.cycles?.[ci]?.[si]; if(!s)return;
+  $('sName').value=s.name||'';
+  if(APP.type==='3c'){
+    document.querySelectorAll('.cc').forEach(c=>{ c.classList.remove('on'); c.querySelector('.cd').textContent=''; });
+    ['vcw','incidental','walk','wait','rework','waste','unsafe','difficult','cyclical','periodic','abnormal'].forEach(k=>{
+      if(s[k]){ const btn=document.querySelector(`.cc[data-k="${k}"]`); if(btn){ btn.classList.add('on'); btn.querySelector('.cd').textContent='✓'; } }
+    });
+    $('cEracs').value=s.eracs||''; $('cNote3c').value=s.note||'';
+  } else if(APP.type==='ji'){
+    $('jiSamp').value=s.sampling||''; $('jiCrit').value=s.criteria||''; $('jiNote').value=s.note||''; $('jiTools').value=s.tools||'';
+  } else {
+    $('jbWhat').value=s.what||''; $('jbHow').value=s.how||''; $('jbWhy').value=s.why||''; $('jbSafe').value=s.safety||'';
+  }
+}
+
+const _openOv=(open)=>{ if(open) buildPriorOptions(); };
+
+// ═══════════════════════════════════════════════
+// DOMContentLoaded — startup overlay
+// ═══════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', ()=>{
+  // BUG-008 FIX: set version directly from constant, not from missing DOM element
+  const vInline=$('verInline'); if(vInline) vInline.textContent=APP_REVISION;
+  const vStamp=$('revStamp');   if(vStamp)  vStamp.textContent=`${APP_REVISION} · ${BUILD_DATE}`;
+
+  const startup=$('startup');
+  const btnNew=$('btnStartNewStudy');
+  const btnResume=$('btnResumeStudy');
+  const inp=$('resumeJsonInput');
+
+  function resetRuntime(){
+    APP.selMode=false; APP.selSet.clear(); updateSelUI();
+    APP.running=false; APP.frozen=false; APP.editIdx=null;
+    APP.stepStartVT=null; APP.cycleStartVT=null;
+    try{ if(APP.raf) cancelAnimationFrame(APP.raf); }catch(e){}
+    APP.raf=null; APP.tStart=null; APP.tAccum=0;
+    const te=$('timerEl'); if(te) te.textContent='00:00.0';
+    APP.pending=null;
+    try{
+      const bs=$('btnStart'); if(bs){ bs.textContent='▶ Start'; bs.disabled=false; }
+      const be=$('btnStep');  if(be){ be.disabled=true; }
+      const bx=$('btnEnd');   if(bx){ bx.disabled=true; }
+    }catch(e){}
+  }
+
+  function startNewStudy(){
+    APP.type=APP.type||'jb'; APP.meta={}; APP.cycles=[[]]; APP.cur=0;
+    resetRuntime(); applyType(); renderTabs(); renderSteps();
+  }
+
+  function hideStartup(){ if(startup) startup.style.display='none'; }
+
+  if(btnNew){ btnNew.addEventListener('click',()=>{ startNewStudy(); hideStartup(); }); }
+  if(btnResume){ btnResume.addEventListener('click',()=>{ try{ inp&&inp.click(); }catch(e){} }); }
+
+  if(inp){
+    inp.addEventListener('change', async e=>{
+      const f=e.target.files&&e.target.files[0]; if(!f)return;
+      try{
+        await loadJSONFile(f);
+        resetRuntime();
+        hideStartup();
+        // BUG-001 FIX: toast() is now defined and works correctly
+        toast('✓ Resume loaded. Pick the video to continue.');
+      }catch(err){
+        console.warn(err);
+        // BUG-001 FIX: toast() available here too
+        toast('⚠ Could not load JSON file.');
+      }finally{
+        inp.value='';
+      }
+    });
+  }
+});
+
+// ── Review + Help handlers
+(function(){
+  const wire = () => {
+    const br = $('btnReview');
+    if(br){
+      br.disabled = !allRowsFlat().length;
+      br.onclick = () => openRv();
+    }
+    const bb = $('btnRVBack'); if(bb) bb.onclick = () => closeRv();
+    const rf = $('btnRVRefresh'); if(rf) rf.onclick = () => renderReview();
+    const hp = $('btnHelp'); if(hp) hp.onclick = () => toggleHelp(true);
+    if(hp){ hp.addEventListener('touchstart', (e)=>{ e.preventDefault(); toggleHelp(true); }, {passive:false}); }
+    const hc = $('btnHelpClose'); if(hc) hc.onclick = () => toggleHelp(false);
+    const ov = $('helpPanel'); if(ov) ov.addEventListener('click', (e)=>{ if(e.target===ov) toggleHelp(false); });
+    const ec = $('btnRvEditClose'); if(ec) ec.onclick = closeEdit;
+    const es = $('btnRvEditSave'); if(es) es.onclick = saveEdit;
+    const yp = $('btnYamPng'); if(yp) yp.onclick = downloadYamPng;
+    const yc = $('btnYamCsv'); if(yc) yc.onclick = downloadYamCsv;
+    const ed = $('rvEdit'); if(ed) ed.addEventListener('click', (e)=>{ if(e.target===ed) closeEdit(); });
+    const tb = $('rvTbody');
+    if(tb){
+      tb.onclick = (e)=>{
+        const b = e.target.closest('button[data-act]');
+        if(!b) return;
+        const act=b.dataset.act;
+        const c=parseInt(b.dataset.c,10);
+        const i=parseInt(b.dataset.i,10);
+        if(act==='edit') openEdit(c,i);
+      };
+    }
+  };
+  wire();
+  window.addEventListener('resize', ()=>{ if(!$('RV')?.classList.contains('off')) drawYamazumi(); });
+})();
+
+</script>
+
+<div class="rev-stamp" id="revStamp"></div>
+</body>
+</html>
