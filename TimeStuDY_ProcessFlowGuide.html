@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TimeStuDY — Process Flow Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0c10;
+  --s1: #13151c;
+  --s2: #1a1d27;
+  --br: #252932;
+  --br2: #33394a;
+  --gold: #f0a500;
+  --gold2: #ffc23a;
+  --gdim: rgba(240,165,0,.1);
+  --grn: #2ecc71;
+  --red: #e74c3c;
+  --blu: #4a9eff;
+  --pur: #a29bfe;
+  --cyn: #55efc4;
+  --txt: #e2e4ef;
+  --muted: #6b738f;
+  --mono: 'DM Mono', monospace;
+  --head: 'Syne', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { background: var(--bg); color: var(--txt); font-family: var(--body); -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; padding: 0 0 80px; }
+
+/* HERO */
+.hero {
+  background: var(--s1);
+  border-bottom: 1px solid var(--br);
+  padding: 48px 40px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(240,165,0,.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.hero-title {
+  font-family: var(--head);
+  font-size: clamp(32px, 5vw, 58px);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--txt);
+  margin-bottom: 8px;
+}
+.hero-title em { color: var(--gold); font-style: normal; }
+.hero-sub {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  margin-bottom: 28px;
+}
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid;
+  letter-spacing: 1px;
+}
+.badge-gold { color: var(--gold); border-color: rgba(240,165,0,.4); background: rgba(240,165,0,.08); }
+.badge-grn  { color: var(--grn);  border-color: rgba(46,204,113,.4); background: rgba(46,204,113,.08); }
+.badge-blu  { color: var(--blu);  border-color: rgba(74,158,255,.4); background: rgba(74,158,255,.08); }
+
+/* LAYOUT */
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+/* SECTION HEADER */
+.sec-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 0 24px;
+}
+.sec-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.sec-icon.gold { background: rgba(240,165,0,.15); border: 1px solid rgba(240,165,0,.3); }
+.sec-icon.grn  { background: rgba(46,204,113,.12); border: 1px solid rgba(46,204,113,.3); }
+.sec-icon.blu  { background: rgba(74,158,255,.12); border: 1px solid rgba(74,158,255,.3); }
+.sec-icon.pur  { background: rgba(162,155,254,.12); border: 1px solid rgba(162,155,254,.3); }
+.sec-title {
+  font-family: var(--head);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--txt);
+}
+.sec-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: var(--mono);
+  letter-spacing: .5px;
+}
+
+/* FLOW CARD */
+.flow-card {
+  background: var(--s1);
+  border: 1px solid var(--br);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+.flow-title-bar {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--br);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.flow-type-pill {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.pill-gold { color: var(--gold); border-color: rgba(240,165,0,.4); background: rgba(240,165,0,.08); }
+.pill-grn  { color: var(--grn);  border-color: rgba(46,204,113,.4); background: rgba(46,204,113,.08); }
+.pill-blu  { color: var(--blu);  border-color: rgba(74,158,255,.4); background: rgba(74,158,255,.08); }
+.flow-name {
+  font-family: var(--head);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--txt);
+}
+.flow-body { padding: 0; }
+
+/* STEP ROW */
+.step-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  border-bottom: 1px solid var(--br);
+  position: relative;
+}
+.step-row:last-child { border-bottom: none; }
+.step-num-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  position: relative;
+}
+.step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.num-gold { background: var(--gold); color: #000; }
+.num-grn  { background: var(--grn);  color: #000; }
+.num-blu  { background: var(--blu);  color: #000; }
+.step-line {
+  width: 2px;
+  flex: 1;
+  margin-top: 6px;
+  background: var(--br2);
+}
+.step-row:last-child .step-line { display: none; }
+.step-content {
+  padding: 18px 24px 18px 4px;
+}
+.step-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.step-heading {
+  font-family: var(--head);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--txt);
+  margin-bottom: 6px;
+}
+.step-body {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.75;
+}
+.step-body strong { color: var(--txt); font-weight: 600; }
+.step-body .hl-gold { color: var(--gold); font-weight: 600; }
+.step-body .hl-grn  { color: var(--grn);  font-weight: 600; }
+.step-body .hl-red  { color: var(--red);  font-weight: 600; }
+.step-body .hl-blu  { color: var(--blu);  font-weight: 600; }
+
+/* DECISION BOXES */
+.decision-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.dec-box {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid;
+  line-height: 1.5;
+}
+.dec-yes { color: var(--grn); border-color: rgba(46,204,113,.35); background: rgba(46,204,113,.07); }
+.dec-no  { color: var(--red); border-color: rgba(231,76,60,.35);  background: rgba(231,76,60,.07); }
+.dec-note { color: var(--gold); border-color: rgba(240,165,0,.35); background: rgba(240,165,0,.07); }
+.dec-tip  { color: var(--blu); border-color: rgba(74,158,255,.35); background: rgba(74,158,255,.07); }
+
+/* FIELD TAGS */
+.field-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.field-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--s2);
+  border: 1px solid var(--br2);
+  color: var(--muted);
+}
+.field-tag.req { color: var(--gold); border-color: rgba(240,165,0,.3); background: rgba(240,165,0,.06); }
+.field-tag.opt { color: var(--muted); }
+.field-tag.imp { color: var(--red); border-color: rgba(231,76,60,.3); background: rgba(231,76,60,.06); }
+
+/* DIVIDER */
+.divider {
+  border: none;
+  border-top: 1px solid var(--br);
+  margin: 0;
+}
+
+/* COMPARISON TABLE */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 40px;
+}
+.compare-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--br);
+  background: var(--s1);
+}
+.compare-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--br);
+  vertical-align: top;
+  color: var(--txt);
+  font-size: 13px;
+  line-height: 1.6;
+  background: var(--bg);
+}
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table td:first-child {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--s1);
+  border-right: 1px solid var(--br);
+}
+.compare-table .col-header {
+  font-family: var(--head);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* NOTES BLOCK */
+.notes-block {
+  background: var(--s1);
+  border: 1px solid var(--br);
+  border-left: 3px solid var(--gold);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-top: 24px;
+}
+.notes-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.notes-body {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.notes-body strong { color: var(--txt); }
+
+/* OHNO QUOTE */
+.ohno-quote {
+  background: linear-gradient(135deg, rgba(240,165,0,.08), rgba(240,165,0,.03));
+  border: 1px solid rgba(240,165,0,.25);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin: 32px 0;
+  position: relative;
+}
+.ohno-quote::before {
+  content: '"';
+  font-family: var(--head);
+  font-size: 80px;
+  color: var(--gold);
+  opacity: .15;
+  position: absolute;
+  top: -8px; left: 16px;
+  line-height: 1;
+}
+.ohno-text {
+  font-family: var(--head);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--txt);
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+.ohno-attr {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gold);
+  margin-top: 10px;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 600px) {
+  .hero { padding: 32px 20px; }
+  .wrap { padding: 0 16px; }
+  .step-content { padding: 14px 16px 14px 4px; }
+  .compare-table { font-size: 11px; }
+  .flow-title-bar { padding: 12px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">Industrial Engineering Reference</div>
+  <div class="hero-title">Time<em>StuDY</em><br>Process Flow Guide</div>
+  <div class="hero-sub">V2.0f · All Three Study Types · Step-by-Step</div>
+  <div class="hero-badges">
+    <span class="badge badge-gold">📋 3C Work Observation</span>
+    <span class="badge badge-grn">📄 Job Instruction Sheet</span>
+    <span class="badge badge-blu">🔧 Job Breakdown Sheet</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- OHNO QUOTE -->
+  <div class="ohno-quote">
+    <div class="ohno-text">Data is of course important in manufacturing, but I place greatest emphasis on facts — go to the gemba, observe the work, capture what you actually see.</div>
+    <div class="ohno-attr">— Taiichi Ohno, Toyota Production System</div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="sec-header">
+    <div class="sec-icon gold">⚖️</div>
+    <div>
+      <div class="sec-title">Choosing the Right Study Type</div>
+      <div class="sec-desc">Select before going to the floor — each captures different intelligence</div>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto; border-radius:12px; border: 1px solid var(--br); margin-bottom: 12px;">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>DIMENSION</th>
+          <th class="col-header" style="color:var(--gold)">📋 3C Work Observation</th>
+          <th class="col-header" style="color:var(--grn)">📄 Job Instruction Sheet</th>
+          <th class="col-header" style="color:var(--blu)">🔧 Job Breakdown Sheet</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>PURPOSE</td><td>Identify waste, categorize work content, drive ERACS improvement</td><td>Standardize quality checks, define acceptance criteria, capture trainer knowledge</td><td>Train operators — WHAT the step is, HOW to do it, WHY it matters</td></tr>
+        <tr><td>LEAN PHASE</td><td>Kaizen Event, Value Stream Analysis, Improvement Cycle</td><td>Standard Work creation, Quality System documentation</td><td>TWI (Training Within Industry), Onboarding, Cross-training</td></tr>
+        <tr><td>PRIMARY USER</td><td>IE Analyst, Ops Manager, Continuous Improvement lead</td><td>Quality Engineer, Process Engineer, Team Leader</td><td>Team Leader, Trainer, Supervisor</td></tr>
+        <tr><td>QUESTION IT ANSWERS</td><td>"Where is the waste? What can we eliminate?"</td><td>"What is the quality standard for each step?"</td><td>"How do I train someone to do this correctly?"</td></tr>
+        <tr><td>KEY OUTPUT</td><td>ERACS analysis, work content % split (Value/Incidental/Waste)</td><td>Sampling method + acceptance criteria per step</td><td>WHAT / HOW / WHY structured training guide</td></tr>
+        <tr><td>TAKT TIME NEEDED?</td><td>Yes — to compare step times to takt</td><td>Yes — cycle time context</td><td>Optional — duration supports training pacing</td></tr>
+        <tr><td>VIDEO REQUIRED?</td><td>Strongly recommended</td><td>Recommended</td><td>Helpful but can be done live on floor</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ════ 3C FLOW ════ -->
+  <div class="sec-header">
+    <div class="sec-icon gold">📋</div>
+    <div>
+      <div class="sec-title">3C Work Observation — Process Flow</div>
+      <div class="sec-desc">Framework: Characterize → Content → Category. Purpose: expose waste and improvement opportunities</div>
+    </div>
+  </div>
+
+  <div class="flow-card">
+    <div class="flow-title-bar">
+      <span class="flow-type-pill pill-gold">3C Framework</span>
+      <span class="flow-name">3C Work Observation · End-to-End Flow</span>
+    </div>
+    <div class="flow-body">
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-gold">P</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Pre-Study Preparation</div>
+          <div class="step-heading">Establish Baseline Before Entering the Gemba</div>
+          <div class="step-body">
+            Confirm <strong>Takt Time</strong> for the cell. Calculate <strong>Target Cycle Time</strong> (typically 85–95% of Takt). Know your <strong>required output</strong> (parts per shift/hour). Brief the operator — never observe without notifying them; this is not surveillance, it is improvement. Prepare your video device: charge it, clean the lens, test the angle. The best angle captures the operator's hands and the workpiece simultaneously.
+            <div class="decision-row">
+              <span class="dec-note">⚡ Ohno Rule: Stand and observe for 60 minutes before touching anything. Your eyes must be calibrated first.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-gold">1</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">App Setup</div>
+          <div class="step-heading">Select Study Type → Fill Study Information</div>
+          <div class="step-body">
+            Select <span class="hl-gold">📋 3C Work Observation</span>. Fill all header fields before loading video.
+            <div class="field-grid">
+              <span class="field-tag req">Process / Station ★</span>
+              <span class="field-tag req">Operator ★</span>
+              <span class="field-tag req">Analyst ★</span>
+              <span class="field-tag req">Takt Time (sec) ★</span>
+              <span class="field-tag req">Target Cycle (sec) ★</span>
+              <span class="field-tag req">Date ★</span>
+              <span class="field-tag opt">Department</span>
+              <span class="field-tag opt">Team Leader</span>
+              <span class="field-tag opt">Supervisor</span>
+              <span class="field-tag opt">Part # / Description</span>
+              <span class="field-tag opt">Required Quantity</span>
+            </div>
+            <div class="decision-row">
+              <span class="dec-tip">💡 Tip: Takt Time = Available Time ÷ Customer Demand. If customer wants 100 units in 360 min available, Takt = 216 sec.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-gold">2</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Video Load</div>
+          <div class="step-heading">Load Process Video → Verify Playback</div>
+          <div class="step-body">
+            Tap <strong>Choose Video</strong>. Select the video from Camera Roll or Files. Wait for the video to render in the player. Scrub to the first step start point manually. <span class="hl-gold">Do not tap Start yet.</span> Verify you can see the operator's hands clearly. If not — your observation angle was wrong. Re-shoot before wasting analysis time.
+            <div class="decision-row">
+              <span class="dec-yes">✓ Good angle: hands + workpiece visible throughout</span>
+              <span class="dec-no">✗ Bad angle: operator's body blocks key motion</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-gold">3</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Capture — Per Step</div>
+          <div class="step-heading">▶ Start → Operator Works → ◼ Step End</div>
+          <div class="step-body">
+            Tap <strong>▶ Start</strong>. Video plays. Watch carefully. The moment the <strong>work step changes</strong> — tap <span class="hl-gold">◼ Step End</span>. Video pauses. Fill the capture sheet:
+            <br><br>
+            <strong>Work Step name:</strong> Use verb + noun. "Apply adhesive to frame" not "adhesive." Be specific enough that someone who wasn't there would understand it.<br><br>
+            <strong>ERACS:</strong> Assign one letter only — Eliminate, Rearrange, Add/Subtract, Combine, Simplify. This is your improvement hypothesis, not a finding.<br><br>
+            <strong>Work Content</strong> (pick ONE — mutually exclusive):
+            <div class="decision-row">
+              <span class="dec-yes">✓ Value Creating — customer pays for this, product changes</span>
+              <span class="dec-note">⚡ Incidental — necessary but customer doesn't pay for it (get, put, walk)</span>
+              <span class="dec-no">✗ Waste — eliminate it: waiting, searching, rework, overproduction</span>
+            </div>
+            <strong style="margin-top:10px;display:block">Characteristics</strong> (mark all that apply — these are observation flags, not classifications):
+            <div class="decision-row">
+              <span class="dec-no">⚠ Unsafe Work — anything that creates injury risk</span>
+              <span class="dec-note">⚡ Difficult Work — ergonomic, precision, or coordination burden</span>
+            </div>
+            <strong style="margin-top:10px;display:block">Category</strong> (pick ONE):
+            <div class="decision-row">
+              <span class="dec-yes">C = Cyclical — happens every cycle</span>
+              <span class="dec-tip">P = Periodic — happens every N cycles</span>
+              <span class="dec-note">A = Abnormal — shouldn't happen, it's a defect in process</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-gold">4</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Timing Adjustment</div>
+          <div class="step-heading">Review Timestamps → Adjust If Needed → Save</div>
+          <div class="step-body">
+            Check the <strong>Video Start / End / Duration</strong> shown in the capture sheet. If you tapped Step End a second late (common), use <span class="hl-gold">⟲ -2s</span> or <span class="hl-gold">✓ Set End Here</span> to correct. Use <strong>▶︎ Preview</strong> to watch just that step back before saving. Tap <strong>✓ Save &amp; Continue</strong>. Video resumes from the corrected end point automatically.
+            <div class="decision-row">
+              <span class="dec-tip">💡 Pro tip: A 3C study should have 15–30 steps for most fenestration assembly stations. If you have fewer than 10, your step granularity is too coarse for meaningful ERACS analysis.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-gold">5</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Multi-Cycle</div>
+          <div class="step-heading">◉ End Cycle → Repeat 3–5 Cycles Minimum</div>
+          <div class="step-body">
+            When the operator completes one full unit, tap <span class="hl-gold">◉ End Cycle</span>. A new cycle tab appears. Repeat the study. Statistical validity requires a minimum of <strong>3 cycles</strong>; 5 is preferred. <strong>Discard the first cycle</strong> — operators adjust their pace when being observed (Hawthorne Effect). Use cycles 2–5 for analysis. The app will export all cycles.
+            <div class="decision-row">
+              <span class="dec-yes">✓ 5 cycles = statistically defensible to management</span>
+              <span class="dec-no">✗ 1 cycle = anecdote, not data</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-gold">6</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Export & Save</div>
+          <div class="step-heading">Export .xlsx → Save JSON Backup → Analyze</div>
+          <div class="step-body">
+            Tap <span class="hl-grn">⬇ Export .xlsx</span> for the official template. Tap <span class="hl-gold">JSON</span> to save your session state — this is your backup and allows you to resume if interrupted. In Excel: the ERACS column and work content columns are pre-formatted. Check the totals row — Value Creating % + Incidental % + Waste % should equal 100% of total time.
+            <div class="decision-row">
+              <span class="dec-tip">💡 Lean benchmark: World-class assembly operations achieve 70%+ Value Creating. If you see below 50%, you have a major opportunity — and a story to tell in the supervisor meeting.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════ JI FLOW ════ -->
+  <div class="sec-header">
+    <div class="sec-icon grn">📄</div>
+    <div>
+      <div class="sec-title">Job Instruction Sheet — Process Flow</div>
+      <div class="sec-desc">Purpose: define the quality standard and procedure for each step. The "what to check and how to check it" document.</div>
+    </div>
+  </div>
+
+  <div class="flow-card">
+    <div class="flow-title-bar">
+      <span class="flow-type-pill pill-grn">JI Sheet</span>
+      <span class="flow-name">Job Instruction Sheet · End-to-End Flow</span>
+    </div>
+    <div class="flow-body">
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-grn">P</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Pre-Study Preparation</div>
+          <div class="step-heading">Review Quality Standards Before You Film</div>
+          <div class="step-body">
+            Pull the current engineering drawing, quality spec, or customer requirement document. Know what <strong>pass/fail looks like</strong> for each step before you start. Identify where quality escapes have occurred historically — those steps need the most rigorous criteria definition. Brief the operator: "I'm documenting how quality is built into this process, not auditing your performance."
+            <div class="decision-row">
+              <span class="dec-note">⚡ Key question: "What would cause this step to produce a defect that reaches the customer?" Answer that per step.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-grn">1</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">App Setup</div>
+          <div class="step-heading">Select Job Instruction → Fill Header</div>
+          <div class="step-body">
+            Select <span class="hl-grn">📄 Job Instruction Sheet</span>. JI exports include a quality-focused header.
+            <div class="field-grid">
+              <span class="field-tag req">Process / Station ★</span>
+              <span class="field-tag req">Part # / Description ★</span>
+              <span class="field-tag req">Required Quantity ★</span>
+              <span class="field-tag req">Takt Time ★</span>
+              <span class="field-tag req">Target Cycle Time ★</span>
+              <span class="field-tag req">Date ★</span>
+              <span class="field-tag opt">Operator</span>
+              <span class="field-tag opt">Team Leader</span>
+              <span class="field-tag opt">Supervisor</span>
+              <span class="field-tag opt">Analyst / Prepared By</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-grn">2</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Load Video</div>
+          <div class="step-heading">Load Video → Position at Process Start</div>
+          <div class="step-body">
+            Load video as normal. For JI studies, you want a <strong>steady, well-lit shot</strong> that captures the quality characteristic being checked. If the quality check is a visual inspection of a seal or corner, the camera must be close enough to see it. A wide angle that captures motion is fine for 3C; JI needs detail shots of quality points.
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-grn">3</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Capture — Per Step</div>
+          <div class="step-heading">▶ Start → Step End → Fill Quality Fields</div>
+          <div class="step-body">
+            After tapping <strong>◼ Step End</strong>, fill the JI capture sheet:
+            <br><br>
+            <strong>Step Description:</strong> What the operator does. Active verb + object. "Apply perimeter sealant, 3mm bead, inside corner to corner."<br><br>
+            <strong>Sampling Method:</strong> How often this quality check is performed.
+            <div class="decision-row">
+              <span class="dec-yes">100% — check every unit (critical to safety or function)</span>
+              <span class="dec-tip">1st PC — check first piece of each run/shift</span>
+              <span class="dec-note">Every Nth — statistical sample (document N)</span>
+              <span class="dec-no">Visual Audit — periodic spot check</span>
+            </div>
+            <strong style="margin-top:10px;display:block">Acceptance Criteria:</strong> The <em>specific, measurable</em> definition of good. Not "looks good" — that is not a criterion. Examples:
+            <div class="decision-row">
+              <span class="dec-yes">✓ "Bead width 3mm ±0.5mm, no gaps &gt;2mm"</span>
+              <span class="dec-yes">✓ "Label aligned within 2mm of corner mark, no bubbles"</span>
+              <span class="dec-no">✗ "Sealant applied correctly" — not measurable, not a standard</span>
+            </div>
+            <strong style="margin-top:10px;display:block">Notes / Special Instructions:</strong> Safety cautions, common error modes, tips that experience has revealed. This is tribal knowledge capture — the stuff that only the best operators know.<br><br>
+            <strong>Tools / Materials:</strong> List what is physically used in this step.
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-grn">4</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Review Cycle</div>
+          <div class="step-heading">Run 2–3 Cycles · Focus on Quality Step Variation</div>
+          <div class="step-body">
+            JI studies benefit from observing 2–3 cycles specifically to see <strong>if the operator varies technique</strong> between cycles. Variation in a quality step is a red flag — it means the standard isn't clear, isn't trained, or isn't achievable. Document it in Notes. If the operator does the step differently each time, you don't have a standard — you have a guess.
+            <div class="decision-row">
+              <span class="dec-tip">💡 Rother: Variation in the method = variation in the output. Standardize the method before you try to improve the result.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-grn">5</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Export & Validate</div>
+          <div class="step-heading">Export .xlsx → Review with Quality / Engineering</div>
+          <div class="step-body">
+            Export the JI sheet. The output includes: step number, step description, sampling method, acceptance criteria, notes, tools, and timing. <strong>Do not publish this document without sign-off</strong> from Quality Engineering or the Process Engineer. The acceptance criteria must be technically validated before it becomes the standard. A JI sheet that ships with wrong criteria creates more defects than no JI sheet at all.
+            <div class="decision-row">
+              <span class="dec-yes">✓ Signed off by: Quality Eng + Process Eng + Team Leader</span>
+              <span class="dec-no">✗ Never: "We'll fix it later" — an unchecked standard becomes permanent</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════ JB FLOW ════ -->
+  <div class="sec-header">
+    <div class="sec-icon blu">🔧</div>
+    <div>
+      <div class="sec-title">Job Breakdown Sheet — Process Flow</div>
+      <div class="sec-desc">TWI Method: WHAT (important steps) → HOW (key points) → WHY (reasons). Purpose: operator training and knowledge transfer.</div>
+    </div>
+  </div>
+
+  <div class="flow-card">
+    <div class="flow-title-bar">
+      <span class="flow-type-pill pill-blu">JB Sheet</span>
+      <span class="flow-name">Job Breakdown Sheet · End-to-End Flow</span>
+    </div>
+    <div class="flow-body">
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-blu">P</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Pre-Study Preparation</div>
+          <div class="step-heading">Select Your Instructor · Understand the TWI Model</div>
+          <div class="step-body">
+            Film your <strong>best operator</strong> — not the most senior, the most <em>consistent</em>. The TWI method captures the technique that produces the best quality with the least effort. Understand the three-column structure before you start capturing:
+            <div class="decision-row">
+              <span class="dec-blu" style="color:var(--blu);border:1px solid rgba(74,158,255,.35);background:rgba(74,158,255,.07);font-family:var(--mono);font-size:10px;padding:6px 12px;border-radius:8px;">WHAT = Important Step — a logical part of the process where something happens to advance the work</span>
+            </div>
+            <div class="decision-row">
+              <span class="dec-tip">HOW = Key Points — anything that makes or breaks the job, injures the worker, or makes the work easier</span>
+            </div>
+            <div class="decision-row">
+              <span class="dec-yes">WHY = Reasons — why the key point matters (quality, safety, efficiency, customer)</span>
+            </div>
+            <br>The JB sheet is a <strong>training document</strong>, not a process audit. Write it so a new hire with zero background can perform the job correctly on their first supervised attempt.
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-blu">1</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">App Setup</div>
+          <div class="step-heading">Select Job Breakdown → Fill Header</div>
+          <div class="step-body">
+            Select <span class="hl-blu">🔧 Job Breakdown Sheet</span>. JB setup fields include Tools &amp; Materials and PPE — critical for training safety.
+            <div class="field-grid">
+              <span class="field-tag req">Process / Station ★</span>
+              <span class="field-tag req">Tools &amp; Materials ★</span>
+              <span class="field-tag req">PPE Required ★</span>
+              <span class="field-tag opt">Operator (instructor)</span>
+              <span class="field-tag opt">Department</span>
+              <span class="field-tag opt">Date</span>
+            </div>
+            <div class="decision-row">
+              <span class="dec-note">⚡ PPE: Select every applicable item. In fenestration, glass handling means Safety Gloves + Safety Sleeves + Safety Glasses as minimum. If it's not on the JB sheet, it's not part of the standard.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-blu">2</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Strategy Choice</div>
+          <div class="step-heading">Decide: Direct JB Capture vs. Micro-Step + Group</div>
+          <div class="step-body">
+            You have two strategies — choose before you start:
+            <br><br>
+            <strong>Strategy A — Direct JB Capture:</strong> Capture steps at the WHAT level directly. Tap Step End when each important step completes. Fill in HOW, WHY, Safety in the capture sheet immediately. Best when you already know the job well.
+            <br><br>
+            <strong>Strategy B — Micro-Steps First, Then Group:</strong> Capture at a very granular level (every small motion) for precise timing. Then use <span class="hl-gold">Select Steps → Group as WHAT</span> to combine micro-steps under WHAT headings. Best for complex jobs or when you want timing precision AND a training document.
+            <div class="decision-row">
+              <span class="dec-yes">✓ Strategy A: You know the job. Faster. Less post-processing.</span>
+              <span class="dec-tip">💡 Strategy B: Complex job, new process, or need detailed timing data too. More work, richer output.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-blu">3</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Capture — Per Step</div>
+          <div class="step-heading">▶ Start → Step End → Fill WHAT / HOW / WHY</div>
+          <div class="step-body">
+            After each <strong>◼ Step End</strong>:
+            <br><br>
+            <strong>Important Step (WHAT):</strong> Short, clear description. "Position sash in frame." "Apply corner key with mallet." Each WHAT should be a distinct phase of the work — if you combine picking and placing and checking into one WHAT, you've lost the training value.<br><br>
+            <strong>Key Points (HOW):</strong> <em>This is the hardest column to write well.</em> It must answer: what specifically does the operator feel, see, hear, or do that makes the difference between a good part and a bad part?
+            <div class="decision-row">
+              <span class="dec-yes">✓ "Apply pressure at both corners simultaneously until audible click" — specific, testable</span>
+              <span class="dec-no">✗ "Press down firmly" — not specific, not trainable</span>
+            </div>
+            <strong style="margin-top:10px;display:block">Reasons (WHY):</strong> Connect the key point to consequence. Operators who understand WHY maintain the standard without supervision. Operators who don't know WHY will take shortcuts the moment you leave.
+            <div class="decision-row">
+              <span class="dec-yes">✓ "Both corners simultaneously prevents frame racking — misalignment causes water infiltration failures in field"</span>
+            </div>
+            <strong style="margin-top:10px;display:block">Safety Notes:</strong> Step-specific hazards only. General PPE goes in the header.
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-blu">4</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Grouping (Strategy B Only)</div>
+          <div class="step-heading">Select Steps → Group as WHAT → Review</div>
+          <div class="step-body">
+            If using micro-step capture: tap <strong>Select Steps</strong> in the toolbar. Tap each micro-step that belongs to the same WHAT group. Tap <span class="hl-gold">Group as WHAT…</span> and enter the WHAT label. The export will combine HOW/WHY/Safety content and sum durations for the group. Review the grouped steps in the list to confirm they read correctly before exporting.
+            <div class="decision-row">
+              <span class="dec-tip">💡 Minimum 2 steps required to group. You can have ungrouped micro-steps alongside grouped ones — the export handles both.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-blu">5</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Validate</div>
+          <div class="step-heading">Apply the "New Hire Test" Before Exporting</div>
+          <div class="step-body">
+            Read your JB sheet aloud, imagining you are explaining it to someone on their first day. If any of these are true, revise before exporting:
+            <div class="decision-row">
+              <span class="dec-no">✗ A key point says "carefully" or "properly" without defining what that means</span>
+            </div>
+            <div class="decision-row">
+              <span class="dec-no">✗ A WHY says "quality" without specifying which quality characteristic or what failure it prevents</span>
+            </div>
+            <div class="decision-row">
+              <span class="dec-no">✗ A WHAT has no key points — every important step has at least one thing that makes or breaks it</span>
+            </div>
+            <div class="decision-row">
+              <span class="dec-yes">✓ After reading it, a new hire would know exactly what to do and would understand why it matters</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num-col"><div class="step-num num-blu">6</div><div class="step-line"></div></div>
+        <div class="step-content">
+          <div class="step-label">Export & Deploy</div>
+          <div class="step-heading">Export .xlsx → Post at Workstation → Use for Training</div>
+          <div class="step-body">
+            Export the JB sheet. The output is formatted in the classic TWI Job Breakdown layout: alternating row colors, STEP | WHAT | HOW | WHY columns, full header with PPE and tools. Print it. Laminate it. Post it at the workstation — a JB sheet that lives only in a SharePoint folder is not standard work, it is a filing exercise.
+            <div class="decision-row">
+              <span class="dec-yes">✓ Physical copy at workstation: operators can reference it during training</span>
+              <span class="dec-yes">✓ Used for structured TWI 4-step training: Prepare / Present / Try-out / Follow-up</span>
+              <span class="dec-no">✗ Digital-only in a folder nobody opens: waste of your time</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMMON MISTAKES -->
+  <div class="sec-header">
+    <div class="sec-icon pur">⚠️</div>
+    <div>
+      <div class="sec-title">Common Mistakes — All Study Types</div>
+      <div class="sec-desc">Things that will get your study challenged in a supervisor review</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:40px;">
+    <div class="notes-block">
+      <div class="notes-label">⚠ Timing Errors</div>
+      <div class="notes-body">Never start the clock at the wrong point in the cycle. Capture the <strong>full cycle</strong> — from first touch to last touch, including all incidental work. Analysts who only time the "interesting" value-added steps produce studies that undercount by 30–40% and make the job look easier than it is.</div>
+    </div>
+    <div class="notes-block" style="border-left-color:var(--red)">
+      <div class="notes-label" style="color:var(--red)">⚠ One-Cycle Studies</div>
+      <div class="notes-body">A single-cycle study is not a time study. It is a time observation. The difference matters to management, to engineering, and to any IE who reviews your work. Minimum 3 cycles. Discard cycle 1. Use the average of remaining cycles. Flag and explain any outlier cycle.</div>
+    </div>
+    <div class="notes-block" style="border-left-color:var(--blu)">
+      <div class="notes-label" style="color:var(--blu)">⚠ Vague Step Names</div>
+      <div class="notes-body">Step names like "Assembly" or "Check" are not steps — they are categories. A proper step name includes a <strong>verb + specific object</strong>. "Install corner key in lower-left sash corner" is a step. If two people would interpret your step name differently, it's not specific enough.</div>
+    </div>
+    <div class="notes-block" style="border-left-color:var(--grn)">
+      <div class="notes-label" style="color:var(--grn)">⚠ Ignoring Abnormal Work</div>
+      <div class="notes-body">The most dangerous thing you can do is study only normal production. If material shortages, quality escapes, and equipment adjustments happen regularly, they belong in the study as <strong>Abnormal (A)</strong> category steps. These often represent your biggest cycle time variance and your biggest improvement opportunity.</div>
+    </div>
+  </div>
+
+  <div class="ohno-quote" style="border-color:rgba(74,158,255,.25);background:linear-gradient(135deg,rgba(74,158,255,.06),rgba(74,158,255,.02))">
+    <div class="ohno-text" style="color:var(--txt)">Without standards, there can be no kaizen. You cannot improve what you have not defined. The Job Breakdown Sheet is not bureaucracy — it is the baseline from which all improvement is measured.</div>
+    <div class="ohno-attr" style="color:var(--blu)">— Adapted from Taiichi Ohno & TWI Institute Principles</div>
+  </div>
+
+</div>
+</body>
+</html>
